@@ -1,5 +1,5 @@
-# FSX-Empire-Basic
--	This is a basic version of FSX Empire to make it easy for new developers to get started. The next verson will get more complex. 
+# FSX-Empire
+-	For a simpler version to get your feet wet see my other repository. [FSX Empire Basic](https://github.com/ScienceExp/FSX-Empire-Basic)
 
 -	This project links Microsoft Flight Simulator 10 to Google Earth by running a simple local server. You can rotate the camera in google earth with the keys 'n' and 'm' and pitch the camera with ',' and '.'. These keys can be set in the Settings.ini file which is generated the first time you run FSX Empire.
 
