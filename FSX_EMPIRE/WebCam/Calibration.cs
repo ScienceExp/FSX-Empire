@@ -200,7 +200,7 @@ namespace WebCam
         }
 
         #region Lerp
-        public float LerpSpeed = 0.1f;
+        public float LerpSpeed = 0.2f;
 
         float Lerp(float startValue, float endValue, float speed)
         {

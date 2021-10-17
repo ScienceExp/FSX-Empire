@@ -96,13 +96,16 @@ namespace WebCam
                 buffer[current].DrawCircle(tracker.MarkerLocations[1], half, Color.Aqua);
                 buffer[current].SetPixel(tracker.MarkerLocations[1].X, tracker.MarkerLocations[1].Y, Color.Aqua);
             }
-            //if (tracker.boundingBox != null)
-            //{
-            //    for (int i = tracker.boundingBox.bottom; i < tracker.boundingBox.top; i++)
-            //    {
-            //        buffer[current].DrawLine(new Point(tracker.boundingBox.right, i), new Point(tracker.boundingBox.left, i), Color.Red);
-            //    }
-            //}
+            if (tracker.boundingBox != null)
+            {
+                if (tracker.boundingBox.left > tracker.boundingBox.right)
+                {
+                    buffer[current].DrawRect(new Point(tracker.boundingBox.left, tracker.boundingBox.top),
+                        new Point(tracker.boundingBox.right,
+                        tracker.boundingBox.bottom), Color.Red);
+                }
+            }
+
             buffer[current].DrawLine(new Point(0, 0), new Point(100, 200),Color.Green); 
             buffer[current].CopyImageToPointer(pMem);
             #endregion

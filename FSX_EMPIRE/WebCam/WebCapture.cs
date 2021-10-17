@@ -85,6 +85,17 @@ namespace WebCam
             procesor.tracker.boundingBox.right = calibration.boundingBox.right - padding;
             procesor.tracker.boundingBox.top = calibration.boundingBox.top + padding;
             procesor.tracker.boundingBox.bottom = calibration.boundingBox.bottom - padding;
+
+            #region Fix off screen bounding box
+            if (procesor.tracker.boundingBox.right < 0)
+                procesor.tracker.boundingBox.right = 0;
+            if (procesor.tracker.boundingBox.bottom < 0)
+                procesor.tracker.boundingBox.bottom = 0;
+            if (procesor.tracker.boundingBox.left > CaptureWidth)
+                procesor.tracker.boundingBox.left = CaptureWidth;
+            if (procesor.tracker.boundingBox.top > CaptureHeight)
+                procesor.tracker.boundingBox.top = CaptureHeight;
+            #endregion 
         }
         #endregion 
 

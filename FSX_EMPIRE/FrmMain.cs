@@ -248,8 +248,8 @@ namespace FSX_EMPIRE
         {
             if (CalibrationComplete)
             {
-                float xmul = 50;     //max rotation angle
-                float ymul = 30;
+                float xmul = 60;     //max rotation angle
+                float ymul = 45;
                 float x = webCapture1.calibration.GetRotationLeftRight(webCapture1.TopMarker, webCapture1.BottomMarker);
                 float y = webCapture1.calibration.GetRotationUpDown(webCapture1.TopMarker, webCapture1.BottomMarker);
                 G.camera.SetPitchAndRotation(x * xmul, y * ymul);
@@ -258,7 +258,7 @@ namespace FSX_EMPIRE
 
         private void BtnLerpSpeed_Click(object sender, EventArgs e)
         {
-            float v = 0.8f;
+            float v = 0.2f;
             if (float.TryParse(txtLerpSpeed.Text, out v))
             {
                 webCapture1.calibration.LerpSpeed = v;

@@ -56,12 +56,12 @@
             this.label1 = new System.Windows.Forms.Label();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.webCapture1 = new WebCam.WebCapture();
-            this.btnCalibrate = new System.Windows.Forms.Button();
-            this.TimerUpdateCamera = new System.Windows.Forms.Timer(this.components);
-            this.BtnLerpSpeed = new System.Windows.Forms.Button();
             this.txtLerpSpeed = new System.Windows.Forms.TextBox();
+            this.BtnLerpSpeed = new System.Windows.Forms.Button();
+            this.btnCalibrate = new System.Windows.Forms.Button();
+            this.webCapture1 = new WebCam.WebCapture();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.TimerUpdateCamera = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.picGoogleEarthConnect)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -315,6 +315,54 @@
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "WebCam";
             // 
+            // txtLerpSpeed
+            // 
+            this.txtLerpSpeed.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtLerpSpeed.Location = new System.Drawing.Point(219, 167);
+            this.txtLerpSpeed.Name = "txtLerpSpeed";
+            this.txtLerpSpeed.Size = new System.Drawing.Size(68, 20);
+            this.txtLerpSpeed.TabIndex = 3;
+            this.txtLerpSpeed.Text = "0.2";
+            // 
+            // BtnLerpSpeed
+            // 
+            this.BtnLerpSpeed.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.BtnLerpSpeed.Location = new System.Drawing.Point(140, 167);
+            this.BtnLerpSpeed.Name = "BtnLerpSpeed";
+            this.BtnLerpSpeed.Size = new System.Drawing.Size(73, 22);
+            this.BtnLerpSpeed.TabIndex = 2;
+            this.BtnLerpSpeed.Text = "Lerp Speed";
+            this.BtnLerpSpeed.UseVisualStyleBackColor = true;
+            this.BtnLerpSpeed.Click += new System.EventHandler(this.BtnLerpSpeed_Click);
+            // 
+            // btnCalibrate
+            // 
+            this.btnCalibrate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnCalibrate.Location = new System.Drawing.Point(231, 6);
+            this.btnCalibrate.Name = "btnCalibrate";
+            this.btnCalibrate.Size = new System.Drawing.Size(73, 22);
+            this.btnCalibrate.TabIndex = 1;
+            this.btnCalibrate.Text = "Calibrate";
+            this.btnCalibrate.UseVisualStyleBackColor = true;
+            this.btnCalibrate.Click += new System.EventHandler(this.btnCalibrate_Click);
+            // 
+            // webCapture1
+            // 
+            this.webCapture1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.webCapture1.BackColor = System.Drawing.Color.White;
+            this.webCapture1.CaptureFPS = 30;
+            this.webCapture1.CaptureHeight = 720;
+            this.webCapture1.CaptureWidth = 1280;
+            this.webCapture1.Location = new System.Drawing.Point(3, 2);
+            this.webCapture1.Name = "webCapture1";
+            this.webCapture1.ShowTrackerDebug = false;
+            this.webCapture1.Size = new System.Drawing.Size(304, 194);
+            this.webCapture1.TabIndex = 0;
+            this.webCapture1.TrackerMarkerSize = 32;
+            this.webCapture1.TrackerMinimumMatch = 0.3F;
+            // 
             // tabPage2
             // 
             this.tabPage2.Controls.Add(this.btnManifoldPressureSet);
@@ -338,63 +386,15 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(331, 177);
+            this.tabPage2.Size = new System.Drawing.Size(310, 198);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "CoPilot";
             this.tabPage2.UseVisualStyleBackColor = true;
-            // 
-            // webCapture1
-            // 
-            this.webCapture1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.webCapture1.BackColor = System.Drawing.Color.White;
-            this.webCapture1.CaptureFPS = 30;
-            this.webCapture1.CaptureHeight = 720;
-            this.webCapture1.CaptureWidth = 1280;
-            this.webCapture1.Location = new System.Drawing.Point(3, 2);
-            this.webCapture1.Name = "webCapture1";
-            this.webCapture1.ShowTrackerDebug = false;
-            this.webCapture1.Size = new System.Drawing.Size(304, 194);
-            this.webCapture1.TabIndex = 0;
-            this.webCapture1.TrackerMarkerSize = 32;
-            this.webCapture1.TrackerMinimumMatch = 0.3F;
-            // 
-            // btnCalibrate
-            // 
-            this.btnCalibrate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCalibrate.Location = new System.Drawing.Point(231, 6);
-            this.btnCalibrate.Name = "btnCalibrate";
-            this.btnCalibrate.Size = new System.Drawing.Size(73, 22);
-            this.btnCalibrate.TabIndex = 1;
-            this.btnCalibrate.Text = "Calibrate";
-            this.btnCalibrate.UseVisualStyleBackColor = true;
-            this.btnCalibrate.Click += new System.EventHandler(this.btnCalibrate_Click);
             // 
             // TimerUpdateCamera
             // 
             this.TimerUpdateCamera.Interval = 34;
             this.TimerUpdateCamera.Tick += new System.EventHandler(this.TimerUpdateCamera_Tick);
-            // 
-            // BtnLerpSpeed
-            // 
-            this.BtnLerpSpeed.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.BtnLerpSpeed.Location = new System.Drawing.Point(140, 167);
-            this.BtnLerpSpeed.Name = "BtnLerpSpeed";
-            this.BtnLerpSpeed.Size = new System.Drawing.Size(73, 22);
-            this.BtnLerpSpeed.TabIndex = 2;
-            this.BtnLerpSpeed.Text = "Lerp Speed";
-            this.BtnLerpSpeed.UseVisualStyleBackColor = true;
-            this.BtnLerpSpeed.Click += new System.EventHandler(this.BtnLerpSpeed_Click);
-            // 
-            // txtLerpSpeed
-            // 
-            this.txtLerpSpeed.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtLerpSpeed.Location = new System.Drawing.Point(219, 167);
-            this.txtLerpSpeed.Name = "txtLerpSpeed";
-            this.txtLerpSpeed.Size = new System.Drawing.Size(68, 20);
-            this.txtLerpSpeed.TabIndex = 3;
-            this.txtLerpSpeed.Text = "0.1";
             // 
             // FrmMain
             // 

@@ -130,6 +130,7 @@ namespace WebCam
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DrawLine(Point begin, Point end, Color color)
         {
+            // Does not work with reverse(negative) angles. Todo adgist point to draw from lowest to highest.
             Point nextPoint = begin;
             int deltax = end.X - begin.X;
             int deltay = end.Y - begin.Y;
@@ -299,6 +300,21 @@ namespace WebCam
                 }
                 x++;
             } while (x <= y);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void DrawRect(Point TopLeft, Point BottomRight, Color color)
+        {
+            for (int x = BottomRight.X; x < TopLeft.X ; x++)
+            {
+                SetPixel(x, TopLeft.Y, color);
+                SetPixel(x, BottomRight.Y, color);
+            }
+            for (int y = BottomRight.Y ; y < TopLeft.Y; y++)
+            {
+                SetPixel(BottomRight.X, y, color);
+                SetPixel(TopLeft.X, y, color);
+            }
         }
         #endregion
 
