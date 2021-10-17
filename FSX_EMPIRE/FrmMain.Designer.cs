@@ -54,7 +54,18 @@
             this.picGoogleEarthConnect = new System.Windows.Forms.PictureBox();
             this.FSX_SimConnect1 = new FSX_EMPIRE.FSX_SimConnect();
             this.label1 = new System.Windows.Forms.Label();
+            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.webCapture1 = new WebCam.WebCapture();
+            this.btnCalibrate = new System.Windows.Forms.Button();
+            this.TimerUpdateCamera = new System.Windows.Forms.Timer(this.components);
+            this.BtnLerpSpeed = new System.Windows.Forms.Button();
+            this.txtLerpSpeed = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.picGoogleEarthConnect)).BeginInit();
+            this.tabControl1.SuspendLayout();
+            this.tabPage1.SuspendLayout();
+            this.tabPage2.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnConnect
@@ -84,7 +95,7 @@
             // 
             // txtAirSpeed
             // 
-            this.txtAirSpeed.Location = new System.Drawing.Point(147, 59);
+            this.txtAirSpeed.Location = new System.Drawing.Point(108, 3);
             this.txtAirSpeed.Name = "txtAirSpeed";
             this.txtAirSpeed.Size = new System.Drawing.Size(38, 20);
             this.txtAirSpeed.TabIndex = 9;
@@ -93,7 +104,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(44, 62);
+            this.label2.Location = new System.Drawing.Point(5, 6);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(53, 13);
             this.label2.TabIndex = 10;
@@ -101,7 +112,7 @@
             // 
             // btnAirSpeedSet
             // 
-            this.btnAirSpeedSet.Location = new System.Drawing.Point(191, 57);
+            this.btnAirSpeedSet.Location = new System.Drawing.Point(152, 1);
             this.btnAirSpeedSet.Name = "btnAirSpeedSet";
             this.btnAirSpeedSet.Size = new System.Drawing.Size(37, 23);
             this.btnAirSpeedSet.TabIndex = 11;
@@ -111,7 +122,7 @@
             // 
             // btnAirSpeedOff
             // 
-            this.btnAirSpeedOff.Location = new System.Drawing.Point(234, 57);
+            this.btnAirSpeedOff.Location = new System.Drawing.Point(195, 1);
             this.btnAirSpeedOff.Name = "btnAirSpeedOff";
             this.btnAirSpeedOff.Size = new System.Drawing.Size(37, 23);
             this.btnAirSpeedOff.TabIndex = 12;
@@ -121,7 +132,7 @@
             // 
             // btnSimRateInc
             // 
-            this.btnSimRateInc.Location = new System.Drawing.Point(163, 210);
+            this.btnSimRateInc.Location = new System.Drawing.Point(88, 148);
             this.btnSimRateInc.Name = "btnSimRateInc";
             this.btnSimRateInc.Size = new System.Drawing.Size(81, 23);
             this.btnSimRateInc.TabIndex = 13;
@@ -131,7 +142,7 @@
             // 
             // btnSimRateDec
             // 
-            this.btnSimRateDec.Location = new System.Drawing.Point(77, 210);
+            this.btnSimRateDec.Location = new System.Drawing.Point(2, 148);
             this.btnSimRateDec.Name = "btnSimRateDec";
             this.btnSimRateDec.Size = new System.Drawing.Size(80, 23);
             this.btnSimRateDec.TabIndex = 14;
@@ -141,7 +152,7 @@
             // 
             // btnManifoldPressureOff
             // 
-            this.btnManifoldPressureOff.Location = new System.Drawing.Point(234, 86);
+            this.btnManifoldPressureOff.Location = new System.Drawing.Point(195, 30);
             this.btnManifoldPressureOff.Name = "btnManifoldPressureOff";
             this.btnManifoldPressureOff.Size = new System.Drawing.Size(37, 23);
             this.btnManifoldPressureOff.TabIndex = 18;
@@ -151,7 +162,7 @@
             // 
             // btnManifoldPressureSet
             // 
-            this.btnManifoldPressureSet.Location = new System.Drawing.Point(191, 86);
+            this.btnManifoldPressureSet.Location = new System.Drawing.Point(152, 30);
             this.btnManifoldPressureSet.Name = "btnManifoldPressureSet";
             this.btnManifoldPressureSet.Size = new System.Drawing.Size(37, 23);
             this.btnManifoldPressureSet.TabIndex = 17;
@@ -162,7 +173,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(44, 91);
+            this.label3.Location = new System.Drawing.Point(5, 35);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(91, 13);
             this.label3.TabIndex = 16;
@@ -170,7 +181,7 @@
             // 
             // txtManifoldPressure
             // 
-            this.txtManifoldPressure.Location = new System.Drawing.Point(147, 88);
+            this.txtManifoldPressure.Location = new System.Drawing.Point(108, 32);
             this.txtManifoldPressure.Name = "txtManifoldPressure";
             this.txtManifoldPressure.Size = new System.Drawing.Size(38, 20);
             this.txtManifoldPressure.TabIndex = 15;
@@ -178,7 +189,7 @@
             // 
             // btnPropellerRPMOff
             // 
-            this.btnPropellerRPMOff.Location = new System.Drawing.Point(234, 113);
+            this.btnPropellerRPMOff.Location = new System.Drawing.Point(195, 57);
             this.btnPropellerRPMOff.Name = "btnPropellerRPMOff";
             this.btnPropellerRPMOff.Size = new System.Drawing.Size(37, 23);
             this.btnPropellerRPMOff.TabIndex = 22;
@@ -188,7 +199,7 @@
             // 
             // btnPropellerRPMSet
             // 
-            this.btnPropellerRPMSet.Location = new System.Drawing.Point(191, 113);
+            this.btnPropellerRPMSet.Location = new System.Drawing.Point(152, 57);
             this.btnPropellerRPMSet.Name = "btnPropellerRPMSet";
             this.btnPropellerRPMSet.Size = new System.Drawing.Size(37, 23);
             this.btnPropellerRPMSet.TabIndex = 21;
@@ -199,7 +210,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(45, 118);
+            this.label4.Location = new System.Drawing.Point(6, 62);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(75, 13);
             this.label4.TabIndex = 20;
@@ -207,7 +218,7 @@
             // 
             // txtPropellerRPM
             // 
-            this.txtPropellerRPM.Location = new System.Drawing.Point(147, 115);
+            this.txtPropellerRPM.Location = new System.Drawing.Point(108, 59);
             this.txtPropellerRPM.Name = "txtPropellerRPM";
             this.txtPropellerRPM.Size = new System.Drawing.Size(38, 20);
             this.txtPropellerRPM.TabIndex = 19;
@@ -215,7 +226,7 @@
             // 
             // btnCowlFlapsOff
             // 
-            this.btnCowlFlapsOff.Location = new System.Drawing.Point(234, 140);
+            this.btnCowlFlapsOff.Location = new System.Drawing.Point(195, 84);
             this.btnCowlFlapsOff.Name = "btnCowlFlapsOff";
             this.btnCowlFlapsOff.Size = new System.Drawing.Size(37, 23);
             this.btnCowlFlapsOff.TabIndex = 26;
@@ -225,7 +236,7 @@
             // 
             // btnCowlFlapsSet
             // 
-            this.btnCowlFlapsSet.Location = new System.Drawing.Point(191, 140);
+            this.btnCowlFlapsSet.Location = new System.Drawing.Point(152, 84);
             this.btnCowlFlapsSet.Name = "btnCowlFlapsSet";
             this.btnCowlFlapsSet.Size = new System.Drawing.Size(37, 23);
             this.btnCowlFlapsSet.TabIndex = 25;
@@ -236,7 +247,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(45, 145);
+            this.label5.Location = new System.Drawing.Point(6, 89);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(58, 13);
             this.label5.TabIndex = 24;
@@ -244,7 +255,7 @@
             // 
             // txtCowlFlaps
             // 
-            this.txtCowlFlaps.Location = new System.Drawing.Point(147, 142);
+            this.txtCowlFlaps.Location = new System.Drawing.Point(108, 86);
             this.txtCowlFlaps.Name = "txtCowlFlaps";
             this.txtCowlFlaps.Size = new System.Drawing.Size(38, 20);
             this.txtCowlFlaps.TabIndex = 23;
@@ -277,31 +288,122 @@
             this.label1.TabIndex = 33;
             this.label1.Text = "Google Earth";
             // 
+            // tabControl1
+            // 
+            this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabControl1.Controls.Add(this.tabPage1);
+            this.tabControl1.Controls.Add(this.tabPage2);
+            this.tabControl1.Location = new System.Drawing.Point(1, 37);
+            this.tabControl1.Name = "tabControl1";
+            this.tabControl1.SelectedIndex = 0;
+            this.tabControl1.Size = new System.Drawing.Size(318, 224);
+            this.tabControl1.TabIndex = 34;
+            // 
+            // tabPage1
+            // 
+            this.tabPage1.BackColor = System.Drawing.Color.Black;
+            this.tabPage1.Controls.Add(this.txtLerpSpeed);
+            this.tabPage1.Controls.Add(this.BtnLerpSpeed);
+            this.tabPage1.Controls.Add(this.btnCalibrate);
+            this.tabPage1.Controls.Add(this.webCapture1);
+            this.tabPage1.Location = new System.Drawing.Point(4, 22);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(310, 198);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "WebCam";
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.Controls.Add(this.btnManifoldPressureSet);
+            this.tabPage2.Controls.Add(this.txtAirSpeed);
+            this.tabPage2.Controls.Add(this.label2);
+            this.tabPage2.Controls.Add(this.btnSimRateDec);
+            this.tabPage2.Controls.Add(this.btnCowlFlapsOff);
+            this.tabPage2.Controls.Add(this.btnSimRateInc);
+            this.tabPage2.Controls.Add(this.btnAirSpeedSet);
+            this.tabPage2.Controls.Add(this.btnCowlFlapsSet);
+            this.tabPage2.Controls.Add(this.btnAirSpeedOff);
+            this.tabPage2.Controls.Add(this.label5);
+            this.tabPage2.Controls.Add(this.txtManifoldPressure);
+            this.tabPage2.Controls.Add(this.txtCowlFlaps);
+            this.tabPage2.Controls.Add(this.label3);
+            this.tabPage2.Controls.Add(this.btnPropellerRPMOff);
+            this.tabPage2.Controls.Add(this.btnManifoldPressureOff);
+            this.tabPage2.Controls.Add(this.btnPropellerRPMSet);
+            this.tabPage2.Controls.Add(this.txtPropellerRPM);
+            this.tabPage2.Controls.Add(this.label4);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(331, 177);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "CoPilot";
+            this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // webCapture1
+            // 
+            this.webCapture1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.webCapture1.BackColor = System.Drawing.Color.White;
+            this.webCapture1.CaptureFPS = 30;
+            this.webCapture1.CaptureHeight = 720;
+            this.webCapture1.CaptureWidth = 1280;
+            this.webCapture1.Location = new System.Drawing.Point(3, 2);
+            this.webCapture1.Name = "webCapture1";
+            this.webCapture1.ShowTrackerDebug = false;
+            this.webCapture1.Size = new System.Drawing.Size(304, 194);
+            this.webCapture1.TabIndex = 0;
+            this.webCapture1.TrackerMarkerSize = 32;
+            this.webCapture1.TrackerMinimumMatch = 0.3F;
+            // 
+            // btnCalibrate
+            // 
+            this.btnCalibrate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnCalibrate.Location = new System.Drawing.Point(231, 6);
+            this.btnCalibrate.Name = "btnCalibrate";
+            this.btnCalibrate.Size = new System.Drawing.Size(73, 22);
+            this.btnCalibrate.TabIndex = 1;
+            this.btnCalibrate.Text = "Calibrate";
+            this.btnCalibrate.UseVisualStyleBackColor = true;
+            this.btnCalibrate.Click += new System.EventHandler(this.btnCalibrate_Click);
+            // 
+            // TimerUpdateCamera
+            // 
+            this.TimerUpdateCamera.Interval = 34;
+            this.TimerUpdateCamera.Tick += new System.EventHandler(this.TimerUpdateCamera_Tick);
+            // 
+            // BtnLerpSpeed
+            // 
+            this.BtnLerpSpeed.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.BtnLerpSpeed.Location = new System.Drawing.Point(140, 167);
+            this.BtnLerpSpeed.Name = "BtnLerpSpeed";
+            this.BtnLerpSpeed.Size = new System.Drawing.Size(73, 22);
+            this.BtnLerpSpeed.TabIndex = 2;
+            this.BtnLerpSpeed.Text = "Lerp Speed";
+            this.BtnLerpSpeed.UseVisualStyleBackColor = true;
+            this.BtnLerpSpeed.Click += new System.EventHandler(this.BtnLerpSpeed_Click);
+            // 
+            // txtLerpSpeed
+            // 
+            this.txtLerpSpeed.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtLerpSpeed.Location = new System.Drawing.Point(219, 167);
+            this.txtLerpSpeed.Name = "txtLerpSpeed";
+            this.txtLerpSpeed.Size = new System.Drawing.Size(68, 20);
+            this.txtLerpSpeed.TabIndex = 3;
+            this.txtLerpSpeed.Text = "0.1";
+            // 
             // FrmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(326, 252);
+            this.ClientSize = new System.Drawing.Size(320, 260);
+            this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.picGoogleEarthConnect);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.btnCowlFlapsOff);
-            this.Controls.Add(this.btnCowlFlapsSet);
-            this.Controls.Add(this.label5);
-            this.Controls.Add(this.txtCowlFlaps);
-            this.Controls.Add(this.btnPropellerRPMOff);
-            this.Controls.Add(this.btnPropellerRPMSet);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.txtPropellerRPM);
-            this.Controls.Add(this.btnManifoldPressureOff);
-            this.Controls.Add(this.btnManifoldPressureSet);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.txtManifoldPressure);
-            this.Controls.Add(this.btnSimRateDec);
-            this.Controls.Add(this.btnSimRateInc);
-            this.Controls.Add(this.btnAirSpeedOff);
-            this.Controls.Add(this.btnAirSpeedSet);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.txtAirSpeed);
             this.Controls.Add(this.FSX_SimConnect1);
             this.Controls.Add(this.btnDisconnect);
             this.Controls.Add(this.btnConnect);
@@ -311,6 +413,11 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmMain_FormClosing);
             this.Load += new System.EventHandler(this.FrmMain_Load);
             ((System.ComponentModel.ISupportInitialize)(this.picGoogleEarthConnect)).EndInit();
+            this.tabControl1.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
+            this.tabPage1.PerformLayout();
+            this.tabPage2.ResumeLayout(false);
+            this.tabPage2.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -342,6 +449,14 @@
         private System.Windows.Forms.TextBox txtCowlFlaps;
         private System.Windows.Forms.PictureBox picGoogleEarthConnect;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.TabPage tabPage2;
+        private WebCam.WebCapture webCapture1;
+        private System.Windows.Forms.Button btnCalibrate;
+        private System.Windows.Forms.Timer TimerUpdateCamera;
+        private System.Windows.Forms.TextBox txtLerpSpeed;
+        private System.Windows.Forms.Button BtnLerpSpeed;
     }
 }
 

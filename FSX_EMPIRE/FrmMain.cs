@@ -6,7 +6,7 @@ namespace FSX_EMPIRE
 {
     public partial class FrmMain : Form
     {
-        Speech speach;
+
 
         #region Form
         public FrmMain()
@@ -20,8 +20,10 @@ namespace FSX_EMPIRE
             WriteSettings();
             LoadSettings();
 
-            speach = new Speech();
+            G.speechSynth = new Speech();
+            G.speechRecognition = new SpeechRecognition();
             //speach.CoPilot("Welcome to FSX Empire!");
+            webCapture1.Start();
 
         }
 
@@ -29,6 +31,8 @@ namespace FSX_EMPIRE
         {
             //speach.Crew("Till next time!", false);
             CloseAll();
+            if (webCapture1 != null)
+                webCapture1.Closeinterfaces();
         }
         #endregion
 
@@ -38,7 +42,8 @@ namespace FSX_EMPIRE
             TimerSimConnectRequest.Enabled = false;
             _ = Google.ServerStop();
             FSX_SimConnect1.CloseConnection();
-            speach.Dispose();
+            G.speechSynth.Dispose();
+            G.speechRecognition.Dispose();
         }
         #endregion
 
@@ -98,12 +103,14 @@ namespace FSX_EMPIRE
         {
             Console.WriteLine("Fsx connection closed");
             TimerSimConnectRequest.Enabled = false;
+            TimerUpdateCamera.Enabled = false;
         }
 
         private void FsxConnectionOpen()
         {
             Console.WriteLine("Fsx connection opened");
             TimerSimConnectRequest.Enabled = true;
+            TimerUpdateCamera.Enabled = true;
         }
         #endregion
         #endregion
@@ -226,5 +233,37 @@ namespace FSX_EMPIRE
             CoPilot.Hold.CowlFlap = -1;
         }
         #endregion
+
+        #region WebCam
+        bool CalibrationComplete = false;
+        private void btnCalibrate_Click(object sender, EventArgs e)
+        {
+            webCapture1.DoCalibration();
+            //todo probably save calibration? (More accurte to do each time though)
+            CalibrationComplete = true;
+        }
+        #endregion
+
+        private void TimerUpdateCamera_Tick(object sender, EventArgs e)
+        {
+            if (CalibrationComplete)
+            {
+                float xmul = 50;     //max rotation angle
+                float ymul = 30;
+                float x = webCapture1.calibration.GetRotationLeftRight(webCapture1.TopMarker, webCapture1.BottomMarker);
+                float y = webCapture1.calibration.GetRotationUpDown(webCapture1.TopMarker, webCapture1.BottomMarker);
+                G.camera.SetPitchAndRotation(x * xmul, y * ymul);
+            }
+        }
+
+        private void BtnLerpSpeed_Click(object sender, EventArgs e)
+        {
+            float v = 0.8f;
+            if (float.TryParse(txtLerpSpeed.Text, out v))
+            {
+                webCapture1.calibration.LerpSpeed = v;
+            }
+
+        }
     }
 }

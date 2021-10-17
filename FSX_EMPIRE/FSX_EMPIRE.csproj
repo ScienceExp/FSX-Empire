@@ -79,6 +79,65 @@
     <Compile Include="SimConnect\SimConnect_Exceptions.cs" />
     <Compile Include="CoPilot\Speech.cs" />
     <Compile Include="Helper\Attitude.cs" />
+    <Compile Include="CoPilot\SpeechRecognition.cs" />
+    <Compile Include="WebCam\Calibration.cs" />
+    <Compile Include="WebCam\DirectShow\amstream.cs" />
+    <Compile Include="WebCam\DirectShow\amvideo.cs" />
+    <Compile Include="WebCam\DirectShow\atscpsipparser.cs" />
+    <Compile Include="WebCam\DirectShow\austream.cs" />
+    <Compile Include="WebCam\DirectShow\AxCore.cs" />
+    <Compile Include="WebCam\DirectShow\AXExtend.cs" />
+    <Compile Include="WebCam\DirectShow\BDAIface.cs" />
+    <Compile Include="WebCam\DirectShow\Bdatif.cs" />
+    <Compile Include="WebCam\DirectShow\BDATypes.cs" />
+    <Compile Include="WebCam\DirectShow\Control.cs" />
+    <Compile Include="WebCam\DirectShow\DES.cs" />
+    <Compile Include="WebCam\DirectShow\DevEnum.cs" />
+    <Compile Include="WebCam\DirectShow\DMODShow.cs" />
+    <Compile Include="WebCam\DirectShow\dsattrib.cs" />
+    <Compile Include="WebCam\DirectShow\DsUtils.cs" />
+    <Compile Include="WebCam\DirectShow\dvbsiparser.cs" />
+    <Compile Include="WebCam\DirectShow\DVDIf.cs" />
+    <Compile Include="WebCam\DirectShow\DynGraph.cs" />
+    <Compile Include="WebCam\DirectShow\encdec.cs" />
+    <Compile Include="WebCam\DirectShow\EvCode.cs" />
+    <Compile Include="WebCam\DirectShow\IL21Dec.cs" />
+    <Compile Include="WebCam\DirectShow\MediaObj.cs" />
+    <Compile Include="WebCam\DirectShow\MediaParam.cs" />
+    <Compile Include="WebCam\DirectShow\Misc.cs" />
+    <Compile Include="WebCam\DirectShow\Mixerocx.cs" />
+    <Compile Include="WebCam\DirectShow\mmstream.cs" />
+    <Compile Include="WebCam\DirectShow\mpconfig.cs" />
+    <Compile Include="WebCam\DirectShow\Mpeg2Data.cs" />
+    <Compile Include="WebCam\DirectShow\mpeg2psiparser.cs" />
+    <Compile Include="WebCam\DirectShow\Mpeg2Structs.cs" />
+    <Compile Include="WebCam\DirectShow\other.cs" />
+    <Compile Include="WebCam\DirectShow\PlayList.cs" />
+    <Compile Include="WebCam\DirectShow\QEdit.cs" />
+    <Compile Include="WebCam\DirectShow\qnetwork.cs" />
+    <Compile Include="WebCam\DirectShow\RegBag.cs" />
+    <Compile Include="WebCam\DirectShow\Sbe.cs" />
+    <Compile Include="WebCam\DirectShow\Tuner.cs" />
+    <Compile Include="WebCam\DirectShow\TvRatings.cs" />
+    <Compile Include="WebCam\DirectShow\Uuids.cs" />
+    <Compile Include="WebCam\DirectShow\Vidcap.cs" />
+    <Compile Include="WebCam\DirectShow\VidPort.cs" />
+    <Compile Include="WebCam\DirectShow\Vmr9.cs" />
+    <Compile Include="WebCam\DirectShow\VmRender.cs" />
+    <Compile Include="WebCam\Extensions\ByteExtensions.cs" />
+    <Compile Include="WebCam\Extensions\ColorExtensions.cs" />
+    <Compile Include="WebCam\Filters.cs" />
+    <Compile Include="WebCam\Global.cs" />
+    <Compile Include="WebCam\GrayScaleBuffer.cs" />
+    <Compile Include="WebCam\ImageBuffer.cs" />
+    <Compile Include="WebCam\Procesor.cs" />
+    <Compile Include="WebCam\Tracker.cs" />
+    <Compile Include="WebCam\WebCapture.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="WebCam\WebCapture.Designer.cs">
+      <DependentUpon>WebCapture.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="FrmMain.resx">
       <DependentUpon>FrmMain.cs</DependentUpon>
     </EmbeddedResource>
@@ -95,6 +154,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="WebCam\WebCapture.resx">
+      <DependentUpon>WebCapture.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

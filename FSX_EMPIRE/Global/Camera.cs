@@ -28,7 +28,7 @@ namespace FSX_EMPIRE
         public string KeyDown = "N";
         #endregion
 
-        #region adjust camera headin, pitch
+        #region adjust camera heading, pitch
         /// <summary>Pitches camera up by incº</summary>
         public void PitchUp()
         {
@@ -84,6 +84,88 @@ namespace FSX_EMPIRE
                 SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
                 HeadingDeg.ToFloat());
         }
+        #endregion
+
+        #region adjust camera heading, pitch based on degree
+        /// <summary>Pitches camera up by incº (-)</summary>
+        public void PitchUp(float degree)
+        {
+            PitchDeg = (PitchDeg - inc).Normalize180();
+
+            G.simConnect.CameraSetRelative6DOF(
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                degree,
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD);
+            
+            PitchDeg = degree;
+        }
+
+        /// <summary>Pitches camera down by incº (+)</summary>
+        public void PitchDown(float degree)
+        {
+            PitchDeg = (PitchDeg + inc).Normalize180();
+
+            G.simConnect.CameraSetRelative6DOF(
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                degree,
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD);
+
+            PitchDeg = degree;
+        }
+
+        /// <summary>Rotates camera right by incº (+)</summary>
+        public void RotateRight(float degree)
+        {
+            HeadingDeg = (HeadingDeg + inc).Normalize180();
+
+            G.simConnect.CameraSetRelative6DOF(
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                degree);
+
+            HeadingDeg = degree;
+        }
+
+        /// <summary>Rotates camera left by incº (-) </summary>
+        public void RotateLeft(float degree)
+        {
+            HeadingDeg = (HeadingDeg - inc).Normalize180();
+
+            G.simConnect.CameraSetRelative6DOF(
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                degree);
+
+            HeadingDeg = degree;
+        }
+
+        /// <summary>Sets camera heading and pitch at the same time</summary>
+        public void SetPitchAndRotation(float headingDeg, float pitchDeg)
+        {
+            G.simConnect.CameraSetRelative6DOF(
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                pitchDeg,
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                headingDeg);
+
+            PitchDeg = pitchDeg;
+            HeadingDeg = headingDeg;
+        }
+
         #endregion
 
         #region calculate combined plane camera rotation

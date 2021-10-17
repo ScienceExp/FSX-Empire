@@ -6,6 +6,9 @@ namespace FSX_EMPIRE
     /// <summary> Global variables that can be accessed by any class </summary>
     class G
     {
+        public static Speech speechSynth;
+        public static SpeechRecognition speechRecognition;
+
         /// <summary> Class for adjusting and syncing cameras in FSX and Google earth </summary>
         public static Camera camera = new Camera();
 

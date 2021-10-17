@@ -150,7 +150,7 @@ namespace FSX_EMPIRE
         }
         #endregion 
 
-        #region initialize
+        #region Initialize
         void Initialize()
         {
             try
