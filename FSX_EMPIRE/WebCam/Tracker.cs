@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace WebCam
 {
-    class Tracker
+    public class Tracker
     {
         public class BoundingBox
         {
@@ -18,12 +18,12 @@ namespace WebCam
         public BoundingBox boundingBox;
         #region Declerations
         /// <summary>Class to hold tracker matches</summary>
-        public class match
+        public class Match
         {
             public Point point;
             public float score;
 
-            public match(int x, int y, float Score)
+            public Match(int x, int y, float Score)
             {
                 point = new Point(x, y);
                 score = Score;
@@ -32,26 +32,27 @@ namespace WebCam
 
         /// <summary>1 = white, 0 = black</summary>
         public float[][] pixelIntensity;
-       
+
         /// <summary>Each element holds the sum of all elements left and above</summary>
-        float[][] integral;
+        readonly float[][] integral;
 
         /// <summary>Width of pixel Intensity Image</summary>
-        int width;
+        readonly int width;
+
         /// <summary>Height of pixel Intensity Image</summary>
-        int height;
+        readonly int height;
 
         const float white = 255f/256f;          // 1 = white (full white or black was causing errors)
         const float black = 0.000001f/256f;     // 0 = black
 
         /// <summary>This is the final marker locations once all processing is done</summary>
-        Point[] Markers;
+        readonly Point[] Markers;
         /// <summary>Size of the marker that is being generated and searched for</summary>
         public int markerSize;
         /// <summary>How close the sum of pixels needs to match the tracker to be considered a possablitly</summary>
         public float minimumPositive = 0.3f;
         /// <summary>Holds all the locations that give a value above minimumPositive</summary>
-        public List<match> PossibleMarkers;
+        public List<Match> PossibleMarkers;
 
         /// <summary>Gives the center of the marker locations</summary>
         public Point[] MarkerLocations
@@ -95,7 +96,7 @@ namespace WebCam
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Find(ImageBuffer buffer)
         {
-            PossibleMarkers = new List<match>();
+            PossibleMarkers = new List<Match>();
 
             if (boundingBox.top > boundingBox.bottom)
                 CroppedImageBufferToIntensity(buffer);
@@ -228,9 +229,6 @@ namespace WebCam
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void FindCheckerMarker()
         {
-            float sumW = 0;
-            float sumB = 0;
-            float sumTotal = 0;
             int hX = markerSize / 2;
             int hY = markerSize / 2;
             float div = hX * hY * 2;
@@ -239,20 +237,20 @@ namespace WebCam
             {
                 for (int x = markerSize; x < width; x++)
                 {
-                    sumW = GetSum(x, y, hX, hY);            //right top
+                    float sumW = GetSum(x, y, hX, hY);
                     sumW += GetSum(x - hX, y - hY, hX, hY); //left bottom
-                    sumW = sumW / div;
+                    sumW /= div;
 
-                    sumB = GetSum(x - hX, y, hX, hY);       //left top
+                    float sumB = GetSum(x - hX, y, hX, hY);
                     sumB += GetSum(x, y - hY, hX, hY);      //right bottom
-                    sumB = sumB / div;
+                    sumB /= div;
 
-                    sumTotal = sumW - sumB;
+                    float sumTotal = sumW - sumB;
 
                     //Keep track of all the places that are possible tracker locations
                     if (sumTotal > minimumPositive)
                     {
-                        PossibleMarkers.Add(new match(x, y, sumTotal));
+                        PossibleMarkers.Add(new Match(x, y, sumTotal));
                     }
                 }
             }
@@ -263,9 +261,6 @@ namespace WebCam
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void CroppedFindCheckerMarker()
         {
-            float sumW = 0;
-            float sumB = 0;
-            float sumTotal = 0;
             int hX = markerSize / 2;
             int hY = markerSize / 2;
             float div = hX * hY * 2;
@@ -274,20 +269,20 @@ namespace WebCam
             {
                 for (int x =boundingBox.right + markerSize; x < boundingBox.left ; x++)
                 {
-                    sumW = GetSum(x, y, hX, hY);            //right top
+                    float sumW = GetSum(x, y, hX, hY);
                     sumW += GetSum(x - hX, y - hY, hX, hY); //left bottom
-                    sumW = sumW / div;
+                    sumW /= div;
 
-                    sumB = GetSum(x - hX, y, hX, hY);       //left top
+                    float sumB = GetSum(x - hX, y, hX, hY);
                     sumB += GetSum(x, y - hY, hX, hY);      //right bottom
-                    sumB = sumB / div;
+                    sumB /= div;
 
-                    sumTotal = sumW - sumB;
+                    float sumTotal = sumW - sumB;
 
                     //Keep track of all the places that are possible tracker locations
                     if (sumTotal > minimumPositive)
                     {
-                        PossibleMarkers.Add(new match(x, y, sumTotal));
+                        PossibleMarkers.Add(new Match(x, y, sumTotal));
                     }
                 }
             }
@@ -319,11 +314,9 @@ namespace WebCam
                 p.Add(PossibleMarkers[0].point);
                 total.Add(PossibleMarkers[0].score);
                 count.Add(1);
-
-                bool bMatch = false;
                 for (int i = 1; i < PossibleMarkers.Count; i++)
                 {
-                    bMatch = false;
+                    bool bMatch = false;
                     for (int j = 0; j < p.Count; j++)
                     {
                         if (Math.Abs(p[j].X - PossibleMarkers[i].point.X) < distance)

@@ -56,8 +56,6 @@
             this.label1 = new System.Windows.Forms.Label();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.txtLerpSpeed = new System.Windows.Forms.TextBox();
-            this.BtnLerpSpeed = new System.Windows.Forms.Button();
             this.btnCalibrate = new System.Windows.Forms.Button();
             this.webCapture1 = new WebCam.WebCapture();
             this.tabPage2 = new System.Windows.Forms.TabPage();
@@ -304,8 +302,6 @@
             // tabPage1
             // 
             this.tabPage1.BackColor = System.Drawing.Color.Black;
-            this.tabPage1.Controls.Add(this.txtLerpSpeed);
-            this.tabPage1.Controls.Add(this.BtnLerpSpeed);
             this.tabPage1.Controls.Add(this.btnCalibrate);
             this.tabPage1.Controls.Add(this.webCapture1);
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
@@ -314,26 +310,6 @@
             this.tabPage1.Size = new System.Drawing.Size(310, 198);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "WebCam";
-            // 
-            // txtLerpSpeed
-            // 
-            this.txtLerpSpeed.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtLerpSpeed.Location = new System.Drawing.Point(219, 167);
-            this.txtLerpSpeed.Name = "txtLerpSpeed";
-            this.txtLerpSpeed.Size = new System.Drawing.Size(68, 20);
-            this.txtLerpSpeed.TabIndex = 3;
-            this.txtLerpSpeed.Text = "0.2";
-            // 
-            // BtnLerpSpeed
-            // 
-            this.BtnLerpSpeed.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.BtnLerpSpeed.Location = new System.Drawing.Point(140, 167);
-            this.BtnLerpSpeed.Name = "BtnLerpSpeed";
-            this.BtnLerpSpeed.Size = new System.Drawing.Size(73, 22);
-            this.BtnLerpSpeed.TabIndex = 2;
-            this.BtnLerpSpeed.Text = "Lerp Speed";
-            this.BtnLerpSpeed.UseVisualStyleBackColor = true;
-            this.BtnLerpSpeed.Click += new System.EventHandler(this.BtnLerpSpeed_Click);
             // 
             // btnCalibrate
             // 
@@ -344,7 +320,7 @@
             this.btnCalibrate.TabIndex = 1;
             this.btnCalibrate.Text = "Calibrate";
             this.btnCalibrate.UseVisualStyleBackColor = true;
-            this.btnCalibrate.Click += new System.EventHandler(this.btnCalibrate_Click);
+            this.btnCalibrate.Click += new System.EventHandler(this.BtnCalibrate_Click);
             // 
             // webCapture1
             // 
@@ -353,15 +329,15 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.webCapture1.BackColor = System.Drawing.Color.White;
             this.webCapture1.CaptureFPS = 30;
-            this.webCapture1.CaptureHeight = 720;
-            this.webCapture1.CaptureWidth = 1280;
+            this.webCapture1.HorizontalResoltion = 1280;
             this.webCapture1.Location = new System.Drawing.Point(3, 2);
+            this.webCapture1.MarkerMinMatch = 0.3F;
+            this.webCapture1.MarkerSize = 32;
             this.webCapture1.Name = "webCapture1";
-            this.webCapture1.ShowTrackerDebug = false;
+            this.webCapture1.ShowDebug = false;
             this.webCapture1.Size = new System.Drawing.Size(304, 194);
             this.webCapture1.TabIndex = 0;
-            this.webCapture1.TrackerMarkerSize = 32;
-            this.webCapture1.TrackerMinimumMatch = 0.3F;
+            this.webCapture1.VerticalResoltion = 720;
             // 
             // tabPage2
             // 
@@ -415,7 +391,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.picGoogleEarthConnect)).EndInit();
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
-            this.tabPage1.PerformLayout();
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
             this.ResumeLayout(false);
@@ -455,8 +430,6 @@
         private WebCam.WebCapture webCapture1;
         private System.Windows.Forms.Button btnCalibrate;
         private System.Windows.Forms.Timer TimerUpdateCamera;
-        private System.Windows.Forms.TextBox txtLerpSpeed;
-        private System.Windows.Forms.Button BtnLerpSpeed;
     }
 }
 

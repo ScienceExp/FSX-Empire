@@ -10,10 +10,12 @@ namespace WebCam
         #region Declerations
         /// <summary>Holds pointer to the original data. Used to copy data back to memory.</summary>
         IntPtr pMem;
+
         /// <summary>Image width in pixels</summary>
-        int width;
+        readonly int width;
+
         /// <summary>Image height in pixels</summary>
-        int height;
+        readonly int height;
         /// <summary>This is the one to put original data into</summary>
         int last;
         /// <summary>This is the one to put changed data into</summary>
@@ -22,8 +24,9 @@ namespace WebCam
         bool ready = false;
         /// <summary>Make true to see intensity pixel representation and the tracker marker being searched for</summary>
         public bool ShowDebug = false;
+
         /// <summary>Byte array that the original image is stored in</summary>
-        ImageBuffer[] buffer;
+        readonly ImageBuffer[] buffer;
         /// <summary>Finds and keeps track of the marker locations</summary>
         public Tracker tracker;
         #endregion
@@ -80,7 +83,7 @@ namespace WebCam
                 tracker.IntensityToImageBuffer(ref buffer[current]);
 
                 // Draws every point that could be a possible marker
-                foreach (Tracker.match p in tracker.PossibleMarkers)
+                foreach (Tracker.Match p in tracker.PossibleMarkers)
                     buffer[current].SetPixel(p.point.X - half, p.point.Y - half, Color.Red);
             }
             #endregion
@@ -106,7 +109,6 @@ namespace WebCam
                 }
             }
 
-            buffer[current].DrawLine(new Point(0, 0), new Point(100, 200),Color.Green); 
             buffer[current].CopyImageToPointer(pMem);
             #endregion
 

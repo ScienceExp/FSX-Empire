@@ -6,8 +6,6 @@ namespace FSX_EMPIRE
 {
     public partial class FrmMain : Form
     {
-
-
         #region Form
         public FrmMain()
         {
@@ -17,7 +15,6 @@ namespace FSX_EMPIRE
         private void FrmMain_Load(object sender, EventArgs e)
         {
             InitializeMyEventsHandlers();
-            WriteSettings();
             LoadSettings();
 
             G.speechSynth = new Speech();
@@ -110,7 +107,8 @@ namespace FSX_EMPIRE
         {
             Console.WriteLine("Fsx connection opened");
             TimerSimConnectRequest.Enabled = true;
-            TimerUpdateCamera.Enabled = true;
+            if (webCapture1.isEnabled)
+                TimerUpdateCamera.Enabled = true;
         }
         #endregion
         #endregion
@@ -121,35 +119,71 @@ namespace FSX_EMPIRE
         {
             string path = AppDomain.CurrentDomain.BaseDirectory + "settings.ini";
 
-            if (File.Exists(path))
+            if (File.Exists(path))  //don't overwrite existing file
                 return;
 
+            #region Write GoogleEarth
             IniFile.WriteKey(path, "ServerEnabled", true.ToString(), "GoogleEarth");
             IniFile.WriteKey(path, "ServerPort", "7890", "GoogleEarth");
             IniFile.WriteKey(path, "RequestRateSeconds", "0.016", "GoogleEarth");
+            #endregion
 
+            #region Write SimConnect
             IniFile.WriteKey(path, "RequestRateMilliSeconds", "16", "SimConnect");
             IniFile.WriteKey(path, "CameraLeftKey", "VK_COMMA", "SimConnect");
             IniFile.WriteKey(path, "CameraRightKey", "VK_PERIOD", "SimConnect");
             IniFile.WriteKey(path, "CameraUpKey", "M", "SimConnect");
             IniFile.WriteKey(path, "CameraDownKey", "N", "SimConnect");
+            #endregion
+
+            #region Write WebCamTracker
+            IniFile.WriteKey(path, "CameraEnabled", true.ToString(), "WebCamTracker");
+            IniFile.WriteKey(path, "FPS", "30", "WebCamTracker");
+            IniFile.WriteKey(path, "VerticalResoltion", "720", "WebCamTracker");
+            IniFile.WriteKey(path, "HorizontalResoltion", "1280", "WebCamTracker");
+            IniFile.WriteKey(path, "ShowDebug", false.ToString(), "WebCamTracker");
+            IniFile.WriteKey(path, "MarkerSize", "32", "WebCamTracker");
+            IniFile.WriteKey(path, "MarkerMinMatch", "0.3", "WebCamTracker");
+            #endregion 
         }
         /// <summary> Loads settings from the settings.ini file. </summary>
         void LoadSettings()
         {
+            WriteSettings(); //make sure file exists
             string path = AppDomain.CurrentDomain.BaseDirectory + "settings.ini";
 
-            bool.TryParse(IniFile.ReadKey(path, "ServerEnabled", "GoogleEarth"), out Google.ServerEnabled);
-            int.TryParse(IniFile.ReadKey(path, "ServerPort", "GoogleEarth"), out Google.ServerPort);
-            double.TryParse(IniFile.ReadKey(path, "RequestRateSeconds", "GoogleEarth"), out Google.RequestRate);
+            #region Read GoogleEarth
+            _ = bool.TryParse(IniFile.ReadKey(path, "ServerEnabled", "GoogleEarth"), out Google.ServerEnabled);
+            _ = int.TryParse(IniFile.ReadKey(path, "ServerPort", "GoogleEarth"), out Google.ServerPort);
+            _ = double.TryParse(IniFile.ReadKey(path, "RequestRateSeconds", "GoogleEarth"), out Google.RequestRate);
+            #endregion 
 
-            int.TryParse(IniFile.ReadKey(path, "RequestRateMilliSeconds", "SimConnect"), out int i);
+            #region Read SimConnect
+            if (int.TryParse(IniFile.ReadKey(path, "RequestRateMilliSeconds", "SimConnect"), out int i))
+                TimerSimConnectRequest.Interval = i;
+
             G.camera.KeyLeft = IniFile.ReadKey(path, "CameraLeftKey", "SimConnect");
-            G.camera.KeyRight = IniFile.ReadKey(path, "CameraRightKey",  "SimConnect");
+            G.camera.KeyRight = IniFile.ReadKey(path, "CameraRightKey", "SimConnect");
             G.camera.KeyUp = IniFile.ReadKey(path, "CameraUpKey", "SimConnect");
             G.camera.KeyDown = IniFile.ReadKey(path, "CameraDownKey", "SimConnect");
+            #endregion
 
-            TimerSimConnectRequest.Interval = i;
+            #region Read WebCamTracker
+            _ = bool.TryParse(IniFile.ReadKey(path, "CameraEnabled", "WebCamTracker"), out bool isEnabled);
+            webCapture1.isEnabled = isEnabled;
+            _ = int.TryParse(IniFile.ReadKey(path, "FPS", "WebCamTracker"), out int FPS);
+            webCapture1.CaptureFPS = FPS;
+            _ = int.TryParse(IniFile.ReadKey(path, "VerticalResoltion", "WebCamTracker"), out int verticalResolution);
+            webCapture1.VerticalResoltion = verticalResolution;
+            _ = int.TryParse(IniFile.ReadKey(path, "HorizontalResoltion", "WebCamTracker"), out int horizontalResolution);
+            webCapture1.HorizontalResoltion = horizontalResolution;
+            _ = bool.TryParse(IniFile.ReadKey(path, "ShowDebug", "WebCamTracker"), out bool showDebug);
+            webCapture1.ShowDebug = showDebug;
+            _ = int.TryParse(IniFile.ReadKey(path, "MarkerSize", "WebCamTracker"), out int markerSize);
+            webCapture1.MarkerSize = markerSize;
+            _ = float.TryParse(IniFile.ReadKey(path, "MarkerMinMatch", "WebCamTracker"), out float markerMinMatch);
+            webCapture1.MarkerMinMatch = markerMinMatch;
+            #endregion
         }
         #endregion
 
@@ -169,7 +203,6 @@ namespace FSX_EMPIRE
 
         private void TimerSimConnectRequest_Tick(object sender, EventArgs e)
         {
-            //Update(); //Redraw Form
             FSX_SimConnect1.RequestDataForCoPilot();
             FSX_SimConnect1.RequestDataForGoogleEarth();
         }
@@ -235,35 +268,26 @@ namespace FSX_EMPIRE
         #endregion
 
         #region WebCam
-        bool CalibrationComplete = false;
-        private void btnCalibrate_Click(object sender, EventArgs e)
+        //bool CalibrationComplete = false;
+        private void BtnCalibrate_Click(object sender, EventArgs e)
         {
             webCapture1.DoCalibration();
             //todo probably save calibration? (More accurte to do each time though)
-            CalibrationComplete = true;
+            //CalibrationComplete = true;
         }
         #endregion
 
         private void TimerUpdateCamera_Tick(object sender, EventArgs e)
         {
-            if (CalibrationComplete)
-            {
-                float xmul = 60;     //max rotation angle
-                float ymul = 45;
-                float x = webCapture1.calibration.GetRotationLeftRight(webCapture1.TopMarker, webCapture1.BottomMarker);
+            //if (CalibrationComplete)
+            //{
+            //Console.WriteLine(webCapture1.TopMarker.X + " " + webCapture1.TopMarker.Y);
+            //Console.WriteLine(webCapture1.BottomMarker.X + " " + webCapture1.BottomMarker.Y);
+            float x = webCapture1.calibration.GetRotationLeftRight(webCapture1.TopMarker, webCapture1.BottomMarker);
                 float y = webCapture1.calibration.GetRotationUpDown(webCapture1.TopMarker, webCapture1.BottomMarker);
-                G.camera.SetPitchAndRotation(x * xmul, y * ymul);
-            }
-        }
-
-        private void BtnLerpSpeed_Click(object sender, EventArgs e)
-        {
-            float v = 0.2f;
-            if (float.TryParse(txtLerpSpeed.Text, out v))
-            {
-                webCapture1.calibration.LerpSpeed = v;
-            }
-
+                G.camera.SetPitchAndRotation(x, y);
+            Console.WriteLine(x + " " + y);
+            //}
         }
     }
 }

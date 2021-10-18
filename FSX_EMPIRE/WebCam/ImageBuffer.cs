@@ -10,17 +10,20 @@ using System.Threading.Tasks;
 
 namespace WebCam
 {
-    class ImageBuffer
+    public class ImageBuffer
     {
         #region Declerations
         /// <summary>Image data in bytes. Series of Blue, Green, Red values. Image[0] = bottom left.</summary>
         public byte[] image;
+
         /// <summary>width of the image in pixels</summary>
-        int width;
+        readonly int width;
+
         /// <summary>height of the image in pixels</summary>
-        int height;
+        readonly int height;
+
         /// <summary></summary>
-        int stride;
+        readonly int stride;
         #endregion
 
         #region Constructor
@@ -136,15 +139,12 @@ namespace WebCam
             int deltay = end.Y - begin.Y;
             int error = deltax / 2;
             int ystep = 1;
-            int point = 0;
-
             if (end.Y < begin.Y)
                 ystep = -1;
 
             while (nextPoint.X <= end.X)
             {
-                point = (nextPoint.X * 3) + (nextPoint.Y * width * 3);
-
+                int point = (nextPoint.X * 3) + (nextPoint.Y * width * 3);
                 image[point] = color.B;
                 image[point + 1] = color.G;
                 image[point + 2] = color.R;
@@ -171,21 +171,21 @@ namespace WebCam
             int d = (5 - radius * 4) / 4;
             int x = 0;
             int y = radius;
-            int xp, yp, xn, yn = 0;
-            int xp3, yp3, xn3, yn3 = 0;
-            int p = 0;
-
+            int xp, yp, xn;
+            int xp3, yp3, xn3;
             do
             {
                 xp = center.X + x;
                 yp = center.Y + y;
                 xn = center.X - x;
-                yn = center.Y - y;
+                int yn = center.Y - y;
 
                 xp3 = xp * 3;
                 yp3 = yp * width * 3;
                 xn3 = xn * 3;
-                yn3 = yn * width * 3;
+                int yn3 = yn * width * 3;
+
+                int p;
 
                 #region SetPixel(center.X + x, center.Y + y) and SetPixel(center.X + x, center.Y - y)
                 if (0 <= xp && xp < width)
@@ -368,15 +368,11 @@ namespace WebCam
         #region Flood Fill & Replace Color
         /// <summary>Will flood fill the targetColor with the fillColor</summary>
         /// <param name="startPoint">Point to start filling from</param>
-        /// <param name="targetColor">Target color that ill be replaced</param>
         /// <param name="fillColor">Flood Fill Color</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void FloodFill(Point pt, Color targetColor, Color fillColor)
+        public void FloodFill(Point pt, Color fillColor)
         {
-            bool spanLeft = false;
-            bool spanRight = false;
-
-            targetColor = GetPixel(pt.X, pt.Y);
+            Color targetColor = GetPixel(pt.X, pt.Y);
             if (targetColor.ToArgb().Equals(fillColor.ToArgb()))
                 return;
 
@@ -392,9 +388,8 @@ namespace WebCam
                     y1--;
 
                 y1++;
-                spanLeft = false;
-                spanRight = false;
-
+                bool spanLeft = false;
+                bool spanRight = false;
                 while (y1 < height && GetPixel(temp.X, y1) == targetColor)
                 {
                     SetPixel(temp.X, y1, fillColor);
@@ -430,9 +425,6 @@ namespace WebCam
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void FloodFillByDistance(Point startPoint, Color targetColor, int distance, Color fillColor)
         {
-            bool spanLeft = false;
-            bool spanRight = false;
-
             Stack<Point> pixels = new Stack<Point>();
 
             pixels.Push(startPoint);               // put item on top of stack
@@ -446,9 +438,8 @@ namespace WebCam
                     y1--;
 
                 y1++;
-                spanLeft = false;
-                spanRight = false;
-
+                bool spanLeft = false;
+                bool spanRight = false;
                 while (y1 < height && targetColor.GetDistance(GetPixel(temp.X, y1)) <= distance)
                 {
                     SetPixel(temp.X, y1, fillColor);
@@ -480,7 +471,7 @@ namespace WebCam
         /// <param name="targetColor">Target color to be replaces</param>
         /// <param name="replacementColor">Color that will replace the targetColor</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void ReplaceColor(Color targetColor, int distance, Color replacementColor)
+        public void ReplaceColor(Color targetColor, Color replacementColor)
         {
             for (int y = 0; y < height; y++)
             {

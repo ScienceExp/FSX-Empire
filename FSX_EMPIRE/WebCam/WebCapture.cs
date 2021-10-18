@@ -1,30 +1,27 @@
 ﻿using DirectShowLib;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace WebCam
 {
     public partial class WebCapture : UserControl, ISampleGrabberCB
     {
+        public bool isEnabled = true ;
         static Procesor procesor;
         //private volatile bool isFinished = true; //Could work on one frame and let others pass...
+
 
         #region Properties Box
         [Category("DirectShow"),
          Description("The width of the image captured by Direct Show")]
-        public int CaptureWidth { get; set; } = 320;
+        public int HorizontalResoltion { get; set; } = 320;
 
         [Category("DirectShow"),
         Description("The height of the image captured by Direct Show")]
-        public int CaptureHeight { get; set; } = 240;
+        public int VerticalResoltion { get; set; } = 240;
 
         [Category("DirectShow"),
         Description("The frames per second that image is captured by Direct Show")]
@@ -32,75 +29,71 @@ namespace WebCam
 
         [Category("DirectShow"),
         Description("Size of the tracker marker to be generated and searched for")]
-        public int TrackerMarkerSize { get; set; } = 8;
+        public int MarkerSize { get; set; } = 8;
 
         [Category("DirectShow"),
         Description("Shows the marker being tracked and all possible matches")]
-        public bool ShowTrackerDebug { get; set; } = false;
+        public bool ShowDebug { get; set; } = false;
 
         [Category("DirectShow"),
         Description("Minimum match value that will be considered matching the tracker")]
-        public float TrackerMinimumMatch { get; set; } = 0.3f;
+        public float MarkerMinMatch { get; set; } = 0.3f;
         #endregion
 
         #region Marker Locations
         [Browsable(false)]
         public Point TopMarker
-        { get {return procesor.tracker.MarkerLocations[0]; } }
+        { get { return procesor.tracker.MarkerLocations[0]; } }
 
         [Browsable(false)]
         public Point BottomMarker
         { get { return procesor.tracker.MarkerLocations[1]; } }
         #endregion
 
-        #region Head Tracking Calibration
+        #region Head Tracking Calibration (Todo: find way to make this more seperate from usercontrol)
         public Calibration calibration = new Calibration();
 
         /// <summary>Just a simple way to do calibration</summary>
         public void DoCalibration()
         {
-            if (MessageBox.Show("Look straight ahead at your screen.\n Click 'OK' to capture orientation.", "Calibration Step 1", MessageBoxButtons.OK) == DialogResult.OK)
-                calibration.SetCenter(TopMarker, BottomMarker);
+            calibration.DoCalibration(ref procesor.tracker);
+            CalibrationToTracker();
+        }
 
-            if (MessageBox.Show("Look as far left as you normally would in game.\n Make sure trackers are still being read. \nClick 'OK' to capture orientation.", "Calibration Step 2", MessageBoxButtons.OK) == DialogResult.OK)
-                calibration.SetMaxLeftRotation(TopMarker, BottomMarker);
+        void CreateTracker()
+        {
+            procesor = new Procesor(HorizontalResoltion, VerticalResoltion, MarkerSize)
+            { ShowDebug = ShowDebug };
+            procesor.tracker.minimumPositive = MarkerMinMatch;
+            procesor.tracker.markerSize = MarkerSize;
 
-            if (MessageBox.Show("Look as far right as you normally would in game.\n Make sure trackers are still being read. \nClick 'OK' to capture orientation.", "Calibration Step 3", MessageBoxButtons.OK) == DialogResult.OK)
-                calibration.SetMaxRightRotation(TopMarker, BottomMarker);
+            calibration.ReadINI();
 
-            if (MessageBox.Show("Look as far up as you normally would in game.\n Make sure both trackers are still being read. \nClick 'OK' to capture orientation.", "Calibration Step 4", MessageBoxButtons.OK) == DialogResult.OK)
-                calibration.SetMaxUpRotation(TopMarker, BottomMarker);
+            CalibrationToTracker();
+        }
 
-            if (MessageBox.Show("Look as far down as you normally would in game.\n Make sure both trackers are still being read. \nClick 'OK' to capture orientation.", "Calibration Step 5", MessageBoxButtons.OK) == DialogResult.OK)
-                calibration.SetMaxDownRotation(TopMarker, BottomMarker);
-
-            if (MessageBox.Show("Would you like to enable auto updating calibration?\n If you rotate more than the calibration max a new max will be set.", "Calibration Step 6", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                calibration.EnableContinualCalibration = true;
-            else
-                calibration.EnableContinualCalibration = false;
-
-            Console.WriteLine(calibration.boundingBox.left + " " + calibration.boundingBox.right + " " + calibration.boundingBox.top + " " + calibration.boundingBox.bottom);
-            int padding = 100;
-            procesor.tracker.boundingBox.left = calibration.boundingBox.left + padding;
-            procesor.tracker.boundingBox.right = calibration.boundingBox.right - padding;
-            procesor.tracker.boundingBox.top = calibration.boundingBox.top + padding;
-            procesor.tracker.boundingBox.bottom = calibration.boundingBox.bottom - padding;
+        void CalibrationToTracker()
+        {
+            procesor.tracker.boundingBox.left = calibration.boundingBox.left + calibration.boundingBoxPadding;
+            procesor.tracker.boundingBox.right = calibration.boundingBox.right - calibration.boundingBoxPadding;
+            procesor.tracker.boundingBox.top = calibration.boundingBox.top + calibration.boundingBoxPadding;
+            procesor.tracker.boundingBox.bottom = calibration.boundingBox.bottom - calibration.boundingBoxPadding;
 
             #region Fix off screen bounding box
             if (procesor.tracker.boundingBox.right < 0)
                 procesor.tracker.boundingBox.right = 0;
             if (procesor.tracker.boundingBox.bottom < 0)
                 procesor.tracker.boundingBox.bottom = 0;
-            if (procesor.tracker.boundingBox.left > CaptureWidth)
-                procesor.tracker.boundingBox.left = CaptureWidth;
-            if (procesor.tracker.boundingBox.top > CaptureHeight)
-                procesor.tracker.boundingBox.top = CaptureHeight;
-            #endregion 
+            if (procesor.tracker.boundingBox.left > HorizontalResoltion)
+                procesor.tracker.boundingBox.left = HorizontalResoltion;
+            if (procesor.tracker.boundingBox.top > VerticalResoltion)
+                procesor.tracker.boundingBox.top = VerticalResoltion;
+            #endregion
         }
-        #endregion 
+        #endregion
 
         #region Direct Show Declerations
-        int _previewStride = 0;
+        //private int _previewStride;
 
         enum PlayState
         {
@@ -113,8 +106,8 @@ namespace WebCam
 
         // Application-defined message to notify app of filtergraph events
         const int WM_GRAPHNOTIFY = 0x8000 + 1;
-        const int WM_NCHITTEST = 0x0084;
-        const int HTTRANSPARENT = -1;
+        //const int WM_NCHITTEST = 0x0084;
+        //const int HTTRANSPARENT = -1;
 
         IVideoWindow VideoWindow = null;
         IMediaControl MediaControl = null;
@@ -135,14 +128,14 @@ namespace WebCam
 
         public void Start()
         {
-            procesor = new Procesor(CaptureWidth, CaptureHeight, TrackerMarkerSize);
-            procesor.ShowDebug = ShowTrackerDebug;
-            procesor.tracker.minimumPositive = TrackerMinimumMatch;
-            procesor.tracker.markerSize = TrackerMarkerSize;
+            if (!isEnabled)
+                return;
+
+            CreateTracker();
 
             DsDevice[] devices = DsDevice.GetDevicesOfCat(FilterCategory.VideoInputDevice);
             // foreach (DsDevice device in devices)
-                // Console.WriteLine("Device Found: " + device.Name);
+            // Console.WriteLine("Device Found: " + device.Name);
 
             if (devices.Length == 0)
                 MessageBox.Show("No Video Input Device Detected.");
@@ -151,6 +144,7 @@ namespace WebCam
         }
 
         #region Direct Show
+
         #region Callbacks
         /// <summary> sample callback, NOT USED. </summary>
         public int SampleCB(double SampleTime, IMediaSample pSample)
@@ -185,6 +179,7 @@ namespace WebCam
 
             return 0;
         }
+
         /// <summary>User Control Callback</summary>
         protected override void WndProc(ref Message m)
         {
@@ -212,7 +207,6 @@ namespace WebCam
         /// <summary>Initializes Capture</summary>
         void CaptureVideo()
         {
-            int hr = 0;
             IBaseFilter sourceFilter = null;
             ISampleGrabber sampleGrabber = null;
 
@@ -220,9 +214,8 @@ namespace WebCam
             {
                 // Get DirectShow interfaces
                 GetInterfaces();
-
                 // Attach the filter graph to the capture graph
-                hr = CaptureGraphBuilder.SetFiltergraph(GraphBuilder);
+                int hr = CaptureGraphBuilder.SetFiltergraph(GraphBuilder);
                 // Console.WriteLine("Attach the filter graph to the capture graph : " + DsError.GetErrorText(hr));
                 DsError.ThrowExceptionForHR(hr);
 
@@ -244,7 +237,7 @@ namespace WebCam
                 DsError.ThrowExceptionForHR(hr);
 
                 // Configure preview settings.
-                SetConfigParams(CaptureGraphBuilder, sourceFilter, CaptureFPS, CaptureWidth, CaptureHeight);
+                SetConfigParams(CaptureGraphBuilder, sourceFilter, CaptureFPS, HorizontalResoltion, VerticalResoltion);
 
                 // Render the preview pin on the video capture filter
                 // Use this instead of this.graphBuilder.RenderFile
@@ -283,13 +276,11 @@ namespace WebCam
                 if (sourceFilter != null)
                 {
                     Marshal.ReleaseComObject(sourceFilter);
-                    sourceFilter = null;
                 }
 
                 if (sampleGrabber != null)
                 {
                     Marshal.ReleaseComObject(sampleGrabber);
-                    sampleGrabber = null;
                 }
             }
         }
@@ -297,7 +288,6 @@ namespace WebCam
         IBaseFilter FindCaptureDevice()
         {
             //System.Collections.ArrayList devices;
-            object source;
 
             // Get all video input devices
             DsDevice[] devices = DsDevice.GetDevicesOfCat(FilterCategory.VideoInputDevice);
@@ -308,7 +298,7 @@ namespace WebCam
 
             // Bind Moniker to a filter object
             Guid iid = typeof(IBaseFilter).GUID;
-            device.Mon.BindToObject(null, null, ref iid, out source);
+            device.Mon.BindToObject(null, null, ref iid, out object source);
 
             // An exception is thrown if cast fail
             return (IBaseFilter)source;
@@ -316,7 +306,6 @@ namespace WebCam
         /// <summary>Gets references to intefaces</summary>
         void GetInterfaces()
         {
-            int hr = 0;
 
             // An exception is thrown if cast fail
             // GraphBuilder = (IGraphBuilder)new FilterGraph();
@@ -327,7 +316,7 @@ namespace WebCam
             MediaEventEx = (IMediaEventEx)GraphBuilder;
 
             // This method designates a window as the recipient of messages generated by or sent to the current DirectShow object
-            hr = MediaEventEx.SetNotifyWindow(Handle, WM_GRAPHNOTIFY, IntPtr.Zero);
+            int hr = MediaEventEx.SetNotifyWindow(Handle, WM_GRAPHNOTIFY, IntPtr.Zero);
             // ThrowExceptionForHR is a wrapper for Marshal.ThrowExceptionForHR, but additionally provides descriptions for any DirectShow specific error messages.
             //If the hr value is not a fatal error, no exception will be thrown:
             DsError.ThrowExceptionForHR(hr);
@@ -336,60 +325,67 @@ namespace WebCam
         /// <summary> Called in the Designer.cs Dispose function</summary>
         public void Closeinterfaces()
         {
-            try
+            // stop previewing data
+            if (MediaControl != null)
+                MediaControl.StopWhenReady();
+
+            CurrentState = PlayState.Stopped;
+
+            // stop recieving events
+            if (MediaEventEx != null)
+                MediaEventEx.SetNotifyWindow(IntPtr.Zero, WM_GRAPHNOTIFY, IntPtr.Zero);
+
+            // Relinquish ownership (IMPORTANT!) of the video window.
+            // Failing to call put_Owner can lead to assert failures within
+            // the video renderer, as it still assumes that it has a valid
+            // parent window.
+            if (VideoWindow != null)
             {
-                // stop previewing data
-                if (MediaControl != null)
-                    MediaControl.StopWhenReady();
+                VideoWindow.put_Visible(OABool.False);
+                VideoWindow.put_Owner(IntPtr.Zero);
+            }
 
-                CurrentState = PlayState.Stopped;
+            // // Remove filter graph from the running object table
+            if (rot != null)
+            {
+                rot.Dispose();
+                rot = null;
+            }
 
-                // stop recieving events
-                if (MediaEventEx != null)
-                    MediaEventEx.SetNotifyWindow(IntPtr.Zero, WM_GRAPHNOTIFY, IntPtr.Zero);
-
-                // Relinquish ownership (IMPORTANT!) of the video window.
-                // Failing to call put_Owner can lead to assert failures within
-                // the video renderer, as it still assumes that it has a valid
-                // parent window.
-                if (VideoWindow != null)
-                {
-                    VideoWindow.put_Visible(OABool.False);
-                    VideoWindow.put_Owner(IntPtr.Zero);
-                }
-
-                // // Remove filter graph from the running object table
-                if (rot != null)
-                {
-                    rot.Dispose();
-                    rot = null;
-                }
-
-                // Release DirectShow interfaces
+            // Release DirectShow interfaces
+            if (MediaControl != null)
+            {
                 Marshal.ReleaseComObject(MediaControl);
                 MediaControl = null;
+            }
+            if (MediaEventEx != null)
+            {
                 Marshal.ReleaseComObject(MediaEventEx);
                 MediaEventEx = null;
+            }
+            if (VideoWindow != null)
+            {
                 Marshal.ReleaseComObject(VideoWindow);
                 VideoWindow = null;
+            }
+            if (GraphBuilder != null)
+            {
                 Marshal.ReleaseComObject(GraphBuilder);
                 GraphBuilder = null;
+            }
+            if (CaptureGraphBuilder != null)
+            {
                 Marshal.ReleaseComObject(CaptureGraphBuilder);
                 CaptureGraphBuilder = null;
             }
-            catch (Exception ex)
-            {
-                //todo figure out exception on close
-                Console.WriteLine(ex.Message);
-            }
         }
+
         /// <summary> Setup window</summary>
         public void SetupVideoWindow()
         {
-            int hr = 0;
             // set the video window to be a child of the main window
             // putowner : Sets the owning parent window for the video playback window. 
-            hr = VideoWindow.put_Owner(Handle);
+            int hr = VideoWindow.put_Owner(Handle);
             DsError.ThrowExceptionForHR(hr);
 
             hr = VideoWindow.put_WindowStyle(WindowStyle.Child | WindowStyle.ClipChildren);
@@ -419,14 +415,13 @@ namespace WebCam
         /// <summary> Resize video window to match owner window size</summary>
         public void ResizeVideoWindow()
         {
-            // Resize the video preview window to match owner window size. left , top , width , height
+            // Resize the video preview window to match this user control size size.
             if (VideoWindow != null)
                 VideoWindow.SetWindowPosition(0, 0, Width, ClientSize.Height);
         }
         /// <summary> Show or hide preview window </summary>
         public void ChangePreviewState(bool showVideo)
         {
-            int hr = 0;
 
             // If the media control interface isn't ready, don't call it
             if (MediaControl == null)
@@ -441,7 +436,7 @@ namespace WebCam
                 {
                     // Start previewing video data
                     // Console.WriteLine("Start previewing video data");
-                    hr = MediaControl.Run();
+                    _ = MediaControl.Run();
                     CurrentState = PlayState.Running;
                 }
             }
@@ -449,27 +444,23 @@ namespace WebCam
             {
                 // Stop previewing video data
                 // Console.WriteLine("Stop previewing video data");
-                hr = MediaControl.StopWhenReady();
+                _ = MediaControl.StopWhenReady();
                 CurrentState = PlayState.Stopped;
             }
         }
         /// <summary> Hangle Events</summary>
         public void HandleGraphEvent()
         {
-            int hr = 0;
-            EventCode evCode;
-            IntPtr evParam1;
-            IntPtr evParam2;
 
             if (MediaEventEx == null)
                 return;
 
-            while (MediaEventEx.GetEvent(out evCode, out evParam1, out evParam2, 0) == 0)
+            while (MediaEventEx.GetEvent(out EventCode evCode, out IntPtr evParam1, out IntPtr evParam2, 0) == 0)
             {
                 // Free event parameters to prevent memory leaks associated with
                 // event parameter data.  While this application is not interested
                 // in the received events, applications should always process them.
-                hr = MediaEventEx.FreeEventParams(evCode, evParam1, evParam2);
+                int hr = MediaEventEx.FreeEventParams(evCode, evParam1, evParam2);
                 DsError.ThrowExceptionForHR(hr);
 
                 // Insert event processing code here, if desired
@@ -482,37 +473,33 @@ namespace WebCam
             int hr;
 
             // Set the media type to Video/RBG24
-            media = new AMMediaType();
-            media.majorType = MediaType.Video;
-            media.subType = MediaSubType.RGB24;
-            media.formatType = FormatType.VideoInfo;
+            media = new AMMediaType
+            {
+                majorType = MediaType.Video,
+                subType = MediaSubType.RGB24,
+                formatType = FormatType.VideoInfo
+            };
 
             hr = sampleGrabber.SetMediaType(media);
             DsError.ThrowExceptionForHR(hr);
 
             DsUtils.FreeAMMediaType(media);
-            media = null;
-
             hr = sampleGrabber.SetCallback(this, 1);
             DsError.ThrowExceptionForHR(hr);
         }
         /// <summary> Set Config </summary>
         private void SetConfigParams(ICaptureGraphBuilder2 capGraph, IBaseFilter capFilter, int iFrameRate, int iWidth, int iHeight)
         {
-            int hr;
-            object config;
-            AMMediaType mediaType;
             // Find the stream config interface
-            hr = capGraph.FindInterface(
-                PinCategory.Capture, MediaType.Video, capFilter, typeof(IAMStreamConfig).GUID, out config);
+            _ = capGraph.FindInterface(
+                PinCategory.Capture, MediaType.Video, capFilter, typeof(IAMStreamConfig).GUID, out object config);
 
-            IAMStreamConfig videoStreamConfig = config as IAMStreamConfig;
 
-            if (videoStreamConfig == null)
+            if (!(config is IAMStreamConfig videoStreamConfig))
                 throw new Exception("Failed to get IAMStreamConfig");
 
             // Get the existing format block
-            hr = videoStreamConfig.GetFormat(out mediaType);
+            int hr = videoStreamConfig.GetFormat(out AMMediaType mediaType);
             DsError.ThrowExceptionForHR(hr);
 
             // copy out the videoinfoheader
@@ -539,30 +526,27 @@ namespace WebCam
             DsError.ThrowExceptionForHR(hr);
 
             DsUtils.FreeAMMediaType(mediaType);
-            mediaType = null;
         }
         /// <summary> Save Size Info</summary>
         private void SaveSizeInfo(ISampleGrabber sampleGrabber)
         {
-            int hr;
-
             // Get the media type from the SampleGrabber
             AMMediaType media = new AMMediaType();
-            hr = sampleGrabber.GetConnectedMediaType(media);
+            int hr = sampleGrabber.GetConnectedMediaType(media);
             DsError.ThrowExceptionForHR(hr);
 
             if ((media.formatType != FormatType.VideoInfo) || (media.formatPtr == IntPtr.Zero))
                 throw new NotSupportedException("Unknown Grabber Media Format");
 
             // Grab the size info
-            VideoInfoHeader videoInfoHeader = (VideoInfoHeader)Marshal.PtrToStructure(media.formatPtr, typeof(VideoInfoHeader));
-            _previewStride = CaptureWidth * (videoInfoHeader.BmiHeader.BitCount / 8);
+            _ = (VideoInfoHeader)Marshal.PtrToStructure(media.formatPtr, typeof(VideoInfoHeader));
+            // VideoInfoHeader videoInfoHeader = (VideoInfoHeader)Marshal.PtrToStructure(media.formatPtr, typeof(VideoInfoHeader));
+            //_previewStride = HorizontalResoltion * (videoInfoHeader.BmiHeader.BitCount / 8);
 
             DsUtils.FreeAMMediaType(media);
-            media = null;
         }
         #endregion
-        
+
         #endregion
     }
 }
