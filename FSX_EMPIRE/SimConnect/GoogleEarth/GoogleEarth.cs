@@ -69,6 +69,22 @@ namespace Sim.Google
             myDefinitionID = DefinitionID;
             myRequestID = RequestID;
         }
+        #endregion
+
+        #region Read/Write INI Settings
+        public void WriteINI(string path)
+        {
+            IniFile.WriteKey(path, "ServerEnabled", true.ToString(), "GoogleEarth");
+            IniFile.WriteKey(path, "ServerPort", "7890", "GoogleEarth");
+            IniFile.WriteKey(path, "RequestRateSeconds", "0.016", "GoogleEarth");
+        }
+
+        public void ReadINI(string path)
+        {
+            _ = bool.TryParse(IniFile.ReadKey(path, "ServerEnabled", "GoogleEarth"), out ServerEnabled);
+            _ = int.TryParse(IniFile.ReadKey(path, "ServerPort", "GoogleEarth"), out ServerPort);
+            _ = double.TryParse(IniFile.ReadKey(path, "RequestRateSeconds", "GoogleEarth"), out RequestRate);
+        }
         #endregion 
 
         #region local server
@@ -216,6 +232,7 @@ namespace Sim.Google
         }
         #endregion
 
+        #region AddToDataDefinition
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         public struct DataDefinition
         {
@@ -240,8 +257,9 @@ namespace Sim.Google
 
             G.simConnect.RegisterDataDefineStruct<DataDefinition>(DEFINITION.GOOGLE_EARTH);
         }
+        #endregion 
 
-        #region request data from SimConnect
+        #region Request/recieve data from SimConnect
         /// <summary>The RequestDataOnSimObjectType function is used to retrieve information about 
         /// simulation objects of a given type that are within a specified radius of the user's aircraft.
         /// <seealso href="https://docs.microsoft.com/en-us/previous-versions/microsoft-esp/cc526983(v=msdn.10)#simconnect_requestdataonsimobjecttype">Documentation</seealso></summary>
@@ -265,7 +283,6 @@ namespace Sim.Google
                     SIMCONNECT_SIMOBJECT_TYPE.USER);
             }
         }
-        #endregion
 
         /// <summary>Handles the data that has been revieved by a request and then sends back CoPilot data if needed.</summary>
         public void OnRecvSimobjectDataBytype(SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE data, Camera camera)
@@ -284,5 +301,6 @@ namespace Sim.Google
                 Roll = attitude.Bank;
             }
         }
+        #endregion
     }
 }

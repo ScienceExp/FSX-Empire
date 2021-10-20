@@ -65,7 +65,6 @@
     <Compile Include="SimConnect\CoPilot\Hold.cs" />
     <Compile Include="SimConnect\CoPilot\Increment.cs" />
     <Compile Include="SimConnect\EventIDs\EventID.cs" />
-    <Compile Include="SimConnect\GoogleEarth\sGoogleEarth.cs" />
     <Compile Include="SimConnect\FSX_SimConnect.cs">
       <SubType>UserControl</SubType>
     </Compile>

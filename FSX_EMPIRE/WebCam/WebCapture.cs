@@ -125,6 +125,35 @@ namespace WebCam
         }
         #endregion
 
+        #region Read/Write INI Settings
+        public void WriteINI(string path)
+        {
+            IniFile.WriteKey(path, "CameraEnabled", true.ToString(), "WebCamTracker");
+            IniFile.WriteKey(path, "FPS", "30", "WebCamTracker");
+            IniFile.WriteKey(path, "VerticalResoltion", "720", "WebCamTracker");
+            IniFile.WriteKey(path, "HorizontalResoltion", "1280", "WebCamTracker");
+            IniFile.WriteKey(path, "ShowDebug", false.ToString(), "WebCamTracker");
+            IniFile.WriteKey(path, "MarkerSize", "32", "WebCamTracker");
+            IniFile.WriteKey(path, "MarkerMinMatch", "0.3", "WebCamTracker");
+        }
+        public void ReadINI(string path)
+        {
+            _ = bool.TryParse(IniFile.ReadKey(path, "CameraEnabled", "WebCamTracker"), out isEnabled);
+            _ = int.TryParse(IniFile.ReadKey(path, "FPS", "WebCamTracker"), out int FPS);
+            CaptureFPS = FPS;
+            _ = int.TryParse(IniFile.ReadKey(path, "VerticalResoltion", "WebCamTracker"), out int verticalResolution);
+            VerticalResoltion = verticalResolution;
+            _ = int.TryParse(IniFile.ReadKey(path, "HorizontalResoltion", "WebCamTracker"), out int horizontalResolution);
+            HorizontalResoltion = horizontalResolution;
+            _ = bool.TryParse(IniFile.ReadKey(path, "ShowDebug", "WebCamTracker"), out bool showDebug);
+            ShowDebug = showDebug;
+            _ = int.TryParse(IniFile.ReadKey(path, "MarkerSize", "WebCamTracker"), out int markerSize);
+            MarkerSize = markerSize;
+            _ = float.TryParse(IniFile.ReadKey(path, "MarkerMinMatch", "WebCamTracker"), out float markerMinMatch);
+            MarkerMinMatch = markerMinMatch;
+        }
+        #endregion 
+
         public void Start()
         {
             if (!isEnabled)

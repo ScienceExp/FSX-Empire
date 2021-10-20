@@ -113,7 +113,7 @@ namespace FSX_EMPIRE
         #endregion
         #endregion
 
-        #region Settings.ini
+        #region Read/Write INI Settings
         /// <summary> Writes default settings if the settings.ini file does not exist</summary>
         void WriteSettings()
         {
@@ -122,69 +122,20 @@ namespace FSX_EMPIRE
             if (File.Exists(path))  //don't overwrite existing file
                 return;
 
-            #region Write GoogleEarth
-            IniFile.WriteKey(path, "ServerEnabled", true.ToString(), "GoogleEarth");
-            IniFile.WriteKey(path, "ServerPort", "7890", "GoogleEarth");
-            IniFile.WriteKey(path, "RequestRateSeconds", "0.016", "GoogleEarth");
-            #endregion
-
-            #region Write SimConnect
-            IniFile.WriteKey(path, "RequestRateMilliSeconds", "16", "SimConnect");
-            IniFile.WriteKey(path, "CameraLeftKey", "VK_COMMA", "SimConnect");
-            IniFile.WriteKey(path, "CameraRightKey", "VK_PERIOD", "SimConnect");
-            IniFile.WriteKey(path, "CameraUpKey", "M", "SimConnect");
-            IniFile.WriteKey(path, "CameraDownKey", "N", "SimConnect");
-            #endregion
-
-            #region Write WebCamTracker
-            IniFile.WriteKey(path, "CameraEnabled", true.ToString(), "WebCamTracker");
-            IniFile.WriteKey(path, "FPS", "30", "WebCamTracker");
-            IniFile.WriteKey(path, "VerticalResoltion", "720", "WebCamTracker");
-            IniFile.WriteKey(path, "HorizontalResoltion", "1280", "WebCamTracker");
-            IniFile.WriteKey(path, "ShowDebug", false.ToString(), "WebCamTracker");
-            IniFile.WriteKey(path, "MarkerSize", "32", "WebCamTracker");
-            IniFile.WriteKey(path, "MarkerMinMatch", "0.3", "WebCamTracker");
-            #endregion 
+            SimConnect.WriteINI(path);
+            webCapture1.WriteINI(path);
         }
+
         /// <summary> Loads settings from the settings.ini file. </summary>
         void LoadSettings()
         {
             WriteSettings(); //make sure file exists
             string path = AppDomain.CurrentDomain.BaseDirectory + "settings.ini";
 
-            #region Read GoogleEarth
-            _ = bool.TryParse(IniFile.ReadKey(path, "ServerEnabled", "GoogleEarth"), out SimConnect.GoogleEarth.ServerEnabled);
-            _ = int.TryParse(IniFile.ReadKey(path, "ServerPort", "GoogleEarth"), out SimConnect.GoogleEarth.ServerPort);
-            _ = double.TryParse(IniFile.ReadKey(path, "RequestRateSeconds", "GoogleEarth"), out SimConnect.GoogleEarth.RequestRate);
-            #endregion 
+            SimConnect.ReadINI(path);
+            TimerSimConnectRequest.Interval = SimConnect.RequestRateMilliSeconds;
 
-            #region Read SimConnect
-            if (int.TryParse(IniFile.ReadKey(path, "RequestRateMilliSeconds", "SimConnect"), out int i))
-                TimerSimConnectRequest.Interval = i;
-
-            SimConnect.camera.ReadINI(path);
-            //SimConnect.camera.KeyLeft = IniFile.ReadKey(path, "CameraLeftKey", "SimConnect");
-            //SimConnect.camera.KeyRight = IniFile.ReadKey(path, "CameraRightKey", "SimConnect");
-            //SimConnect.camera.KeyUp = IniFile.ReadKey(path, "CameraUpKey", "SimConnect");
-            //SimConnect.camera.KeyDown = IniFile.ReadKey(path, "CameraDownKey", "SimConnect");
-            #endregion
-
-            #region Read WebCamTracker
-            _ = bool.TryParse(IniFile.ReadKey(path, "CameraEnabled", "WebCamTracker"), out bool isEnabled);
-            webCapture1.isEnabled = isEnabled;
-            _ = int.TryParse(IniFile.ReadKey(path, "FPS", "WebCamTracker"), out int FPS);
-            webCapture1.CaptureFPS = FPS;
-            _ = int.TryParse(IniFile.ReadKey(path, "VerticalResoltion", "WebCamTracker"), out int verticalResolution);
-            webCapture1.VerticalResoltion = verticalResolution;
-            _ = int.TryParse(IniFile.ReadKey(path, "HorizontalResoltion", "WebCamTracker"), out int horizontalResolution);
-            webCapture1.HorizontalResoltion = horizontalResolution;
-            _ = bool.TryParse(IniFile.ReadKey(path, "ShowDebug", "WebCamTracker"), out bool showDebug);
-            webCapture1.ShowDebug = showDebug;
-            _ = int.TryParse(IniFile.ReadKey(path, "MarkerSize", "WebCamTracker"), out int markerSize);
-            webCapture1.MarkerSize = markerSize;
-            _ = float.TryParse(IniFile.ReadKey(path, "MarkerMinMatch", "WebCamTracker"), out float markerMinMatch);
-            webCapture1.MarkerMinMatch = markerMinMatch;
-            #endregion
+            webCapture1.ReadINI(path);
         }
         #endregion
 

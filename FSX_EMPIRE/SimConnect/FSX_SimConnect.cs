@@ -21,15 +21,21 @@ namespace Sim
         GOOGLE_EARTH,
     };
 
-    enum GROUP : uint
+    enum NotificationGroup : uint
     {
         SIMRATE,
         CAMERA,
     }
 
-    enum INPUT : uint
+    enum InputGroup : uint
     {
         KEYS,
+    }
+
+    /// <summary>Added this because 'MapInputEventToClientEvent' needed an enum type</summary>
+    enum simconnect : uint
+    {
+        unused = 4294967295,
     }
     #endregion
 
@@ -55,6 +61,8 @@ namespace Sim
         #endregion
 
         #region Declerations
+        /// <summary>How fast we want the update data called</summary>
+        public int RequestRateMilliSeconds = 1000;
 
         public SystemEvent SystemEvent;
         public CoPilot.MyCoPilot CoPilot;
@@ -62,9 +70,26 @@ namespace Sim
         public Camera camera;
         /// <summary> User-defined win32 event. </summary>
         const int WM_USER_SIMCONNECT = 0x0402;
-        #endregion 
+        #endregion
 
-        #region FSX_SimConnect()
+        #region Read/Write INI Settings
+        public void WriteINI(string path)
+        {
+            IniFile.WriteKey(path, "RequestRateMilliSeconds", "16", "SimConnect");
+            GoogleEarth.WriteINI(path);
+            camera.WriteINI(path);
+        }
+        public void ReadINI(string path)
+        {
+            if (int.TryParse(IniFile.ReadKey(path, "RequestRateMilliSeconds", "SimConnect"), out int i))
+                RequestRateMilliSeconds = i;
+
+            GoogleEarth.ReadINI(path);
+            camera.ReadINI(path);
+        }
+        #endregion
+
+        #region Constructor
         /// <summary> Constructor </summary>
         public Connect()
         {
@@ -72,8 +97,8 @@ namespace Sim
             SystemEvent = new Sim.SystemEvent();
             CoPilot = new CoPilot.MyCoPilot(DEFINITION.COPILOT, REQUEST.COPILOT);
             GoogleEarth = new Google.Earth(DEFINITION.GOOGLE_EARTH, REQUEST.GOOGLE_EARTH);
-            camera = new Camera(GROUP.CAMERA ,INPUT.KEYS );
-            Console.WriteLine("unused " + (uint)SimConnect.SIMCONNECT_UNUSED);
+            camera = new Camera(NotificationGroup.CAMERA ,InputGroup.KEYS );
+            //Console.WriteLine("unused " + (uint)SimConnect.SIMCONNECT_UNUSED); // = 4294967295
         }
         #endregion
 
@@ -103,7 +128,7 @@ namespace Sim
                 SystemEvent.Subscribe();
 
                 camera.Initialize();
-                G.simConnect.SetInputGroupState(INPUT.KEYS, (uint)SIMCONNECT_STATE.ON);
+                G.simConnect.SetInputGroupState(InputGroup.KEYS, (uint)SIMCONNECT_STATE.ON);
             }
             catch (COMException ex)
             {
@@ -196,7 +221,7 @@ namespace Sim
             if (SystemEvent.OnRecvEvent(data.uEventID))
                 return;
 
-            if (camera.OnRecvEvent(data.uEventID))
+            if (camera.OnRecvEvent(data))
                 return;
 
             Console.WriteLine("UNKNOWN EVENT");
@@ -288,7 +313,7 @@ namespace Sim
                     (uint)SimConnect.SIMCONNECT_OBJECT_ID_USER,
                     EventID.SIM_RATE_INCR,
                     (uint)0,
-                    GROUP.SIMRATE,
+                    NotificationGroup.SIMRATE,
                     SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY
                     );
 
@@ -304,7 +329,7 @@ namespace Sim
                 (uint)SimConnect.SIMCONNECT_OBJECT_ID_USER,
                 EventID.SIM_RATE_DECR,
                 (uint)0,
-                GROUP.SIMRATE,
+                NotificationGroup.SIMRATE,
                 SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY
                 );
 
