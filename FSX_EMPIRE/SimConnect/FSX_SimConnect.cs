@@ -3,18 +3,14 @@ using System.Windows.Forms;
 using Microsoft.FlightSimulator.SimConnect;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.ComponentModel;
+using System.Drawing;
 
-namespace FSX_EMPIRE
+namespace Sim
 {
     #region Enums
     enum DEFINITION : uint
     {
-        ThrottlePos_1,
-        ThrottlePos_2,
-        PropLeverPos_1,
-        PropLeverPos_2,
-        CowlFlapPos_1,
-        CowlFlapPos_2,
         COPILOT,
         GOOGLE_EARTH,
     }
@@ -31,20 +27,6 @@ namespace FSX_EMPIRE
         CAMERA,
     }
 
-    enum EVENT : uint
-    {
-        SIM_START,
-        SIM_STOP,
-        PAUSED,
-        UNPAUSED,
-        SIM_RATE_INCR,
-        SIM_RATE_DECR,
-        CAMERA_LEFT,
-        CAMERA_RIGHT,
-        CAMERA_UP,
-        CAMERA_DOWN,
-    }
-
     enum INPUT : uint
     {
         KEYS,
@@ -52,41 +34,46 @@ namespace FSX_EMPIRE
     #endregion
 
     /// <summary>See: https://docs.microsoft.com/en-us/previous-versions/microsoft-esp/cc526981(v=msdn.10) </summary>
-    public partial class FSX_SimConnect : UserControl
+    public partial class Connect : UserControl
     {
+        #region Properties in the UserControl properties box
+        [Category("SimConnect"),
+        Description("Image to show when connected")]
+        public Image bRunning { get; set; } = new Bitmap(32, 32);
+
+        [Category("SimConnect"),
+        Description("Image to show when disconnected")]
+        public Image bStopped { get; set; } = new Bitmap(32, 32);
+        #endregion 
+
         #region My Event Delegates
-        public delegate void FsxConnectionOpen();
-        public event FsxConnectionOpen OnFsxConnectionOpen;
+        public delegate void ConnectionOpen();
+        public event ConnectionOpen OnConnectionOpen;
 
-        public delegate void FsxConnectionClosed();
-        public event FsxConnectionClosed OnFsxConnectionClosed;
-
-        public delegate void FsxPaused();
-        public event FsxPaused OnFsxPaused;
-
-        public delegate void FsxUnpaused();
-        public event FsxUnpaused OnFsxUnpaused;
-
-        public delegate void FsxSimStart();
-        public event FsxSimStart OnFsxSimStart;
-
-        public delegate void FsxSimStop();
-        public event FsxSimStop OnFsxSimStop;
+        public delegate void ConnectionClosed();
+        public event ConnectionClosed OnConnectionClosed;
         #endregion
 
         #region Declerations
-        /// <summary> Variable to know if sim is paused or not. </summary>
-        public static bool Paused = false;
 
+        public SystemEvent SystemEvent;
+        public CoPilot.MyCoPilot CoPilot;
+        public Google.Earth GoogleEarth;
+        public Camera camera;
         /// <summary> User-defined win32 event. </summary>
         const int WM_USER_SIMCONNECT = 0x0402;
         #endregion 
 
         #region FSX_SimConnect()
         /// <summary> Constructor </summary>
-        public FSX_SimConnect()
+        public Connect()
         {
             InitializeComponent();
+            SystemEvent = new Sim.SystemEvent();
+            CoPilot = new CoPilot.MyCoPilot(DEFINITION.COPILOT, REQUEST.COPILOT);
+            GoogleEarth = new Google.Earth(DEFINITION.GOOGLE_EARTH, REQUEST.GOOGLE_EARTH);
+            camera = new Camera(GROUP.CAMERA ,INPUT.KEYS );
+            Console.WriteLine("unused " + (uint)SimConnect.SIMCONNECT_UNUSED);
         }
         #endregion
 
@@ -104,52 +91,6 @@ namespace FSX_EMPIRE
         }
         #endregion
 
-        #region AddToDataDefinition
-        void AddToDataDefinition_CoPilot()
-        {
-            G.simConnect.AddToDataDefinition(DEFINITION.COPILOT, "AIRSPEED INDICATED", "knots", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            G.simConnect.AddToDataDefinition(DEFINITION.COPILOT, "INDICATED ALTITUDE", "feet", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            G.simConnect.AddToDataDefinition(DEFINITION.COPILOT, "ENG MANIFOLD PRESSURE:1", "inHG", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            G.simConnect.AddToDataDefinition(DEFINITION.COPILOT, "ENG MANIFOLD PRESSURE:2", "inHG", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            G.simConnect.AddToDataDefinition(DEFINITION.COPILOT, "GENERAL ENG THROTTLE LEVER POSITION:1", "Percent", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            G.simConnect.AddToDataDefinition(DEFINITION.COPILOT, "GENERAL ENG THROTTLE LEVER POSITION:2", "Percent", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            G.simConnect.AddToDataDefinition(DEFINITION.COPILOT, "PROP RPM:1", "Rpm", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            G.simConnect.AddToDataDefinition(DEFINITION.COPILOT, "PROP RPM:2", "Rpm", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            G.simConnect.AddToDataDefinition(DEFINITION.COPILOT, "GENERAL ENG PROPELLER LEVER POSITION:1", "percent", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            G.simConnect.AddToDataDefinition(DEFINITION.COPILOT, "GENERAL ENG PROPELLER LEVER POSITION:2", "percent", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            G.simConnect.AddToDataDefinition(DEFINITION.COPILOT, "RECIP ENG COWL FLAP POSITION:1", "percent", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            G.simConnect.AddToDataDefinition(DEFINITION.COPILOT, "RECIP ENG COWL FLAP POSITION:2", "percent", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-
-            // The following is a douplicate in order to send data
-            G.simConnect.AddToDataDefinition(DEFINITION.ThrottlePos_1, "GENERAL ENG THROTTLE LEVER POSITION:1", "Percent", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            G.simConnect.AddToDataDefinition(DEFINITION.ThrottlePos_2, "GENERAL ENG THROTTLE LEVER POSITION:2", "Percent", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            G.simConnect.AddToDataDefinition(DEFINITION.PropLeverPos_1, "GENERAL ENG PROPELLER LEVER POSITION:1", "percent", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            G.simConnect.AddToDataDefinition(DEFINITION.PropLeverPos_2, "GENERAL ENG PROPELLER LEVER POSITION:2", "percent", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            G.simConnect.AddToDataDefinition(DEFINITION.CowlFlapPos_1, "RECIP ENG COWL FLAP POSITION:1", "percent", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            G.simConnect.AddToDataDefinition(DEFINITION.CowlFlapPos_2, "RECIP ENG COWL FLAP POSITION:2", "percent", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-
-            G.simConnect.RegisterDataDefineStruct<SCoPilot>(DEFINITION.COPILOT);
-            //G.simConnect.RegisterDataDefineStruct<double>(DEFINITION.THROTTLE_1); //struct is just a double so no need to register
-            //G.simConnect.RegisterDataDefineStruct<double>(DEFINITION.THROTTLE_2);
-            //G.simConnect.RegisterDataDefineStruct<double>(DEFINITION.PROPELLER_1);
-            //G.simConnect.RegisterDataDefineStruct<double>(DEFINITION.PROPELLER_2);
-            //G.simConnect.RegisterDataDefineStruct<double>(DEFINITION.COWLFLAP_1);
-            //G.simConnect.RegisterDataDefineStruct<double>(DEFINITION.COWLFLAP_2);
-        }
-
-        void AddToDataDefinition_GoogleEarth()
-        {
-            G.simConnect.AddToDataDefinition(DEFINITION.GOOGLE_EARTH, "PLANE LATITUDE", "Degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            G.simConnect.AddToDataDefinition(DEFINITION.GOOGLE_EARTH, "PLANE LONGITUDE", "Degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            G.simConnect.AddToDataDefinition(DEFINITION.GOOGLE_EARTH, "PLANE ALTITUDE", "Meters", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            G.simConnect.AddToDataDefinition(DEFINITION.GOOGLE_EARTH, "PLANE HEADING DEGREES TRUE", "Degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            G.simConnect.AddToDataDefinition(DEFINITION.GOOGLE_EARTH, "PLANE PITCH DEGREES", "Degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            G.simConnect.AddToDataDefinition(DEFINITION.GOOGLE_EARTH, "PLANE BANK DEGREES", "Degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
- 
-            G.simConnect.RegisterDataDefineStruct<SGoogleEarth>(DEFINITION.GOOGLE_EARTH);
-        }
-        #endregion 
-
         #region Initialize
         void Initialize()
         {
@@ -157,11 +98,11 @@ namespace FSX_EMPIRE
             {
                 InitializeEventHandlers();
                 MapClientEventToSimEvent();
-                AddToDataDefinition_CoPilot();
-                AddToDataDefinition_GoogleEarth();
-                SubscribeToSystemEvents();
+                CoPilot.AddToDataDefinition();
+                GoogleEarth.AddToDataDefinition();
+                SystemEvent.Subscribe();
 
-                G.camera.Initialize();
+                camera.Initialize();
                 G.simConnect.SetInputGroupState(INPUT.KEYS, (uint)SIMCONNECT_STATE.ON);
             }
             catch (COMException ex)
@@ -175,50 +116,12 @@ namespace FSX_EMPIRE
         void MapClientEventToSimEvent()
         {
             G.simConnect.MapClientEventToSimEvent(
-                EVENT.SIM_RATE_INCR,
+                EventID.SIM_RATE_INCR,
                 "SIM_RATE_INCR");
 
             G.simConnect.MapClientEventToSimEvent(
-                EVENT.SIM_RATE_DECR,
+                EventID.SIM_RATE_DECR,
                 "SIM_RATE_DECR");
-        }
-        #endregion
-
-        #region SubscribeToSystemEvent & UnsubscribeFromSystemEvent
-        void SubscribeToSystemEvents()
-        {
-            // Request a simulation started and stop event
-            //https://msdn.microsoft.com/en-us/library/cc526983.aspx#SimConnect_SubscribeToSystemEvent
-            G.simConnect.SubscribeToSystemEvent(
-                EVENT.SIM_START,
-                "SimStart");
-
-            G.simConnect.SubscribeToSystemEvent(
-                EVENT.SIM_STOP,
-                "SimStop");
-
-            G.simConnect.SubscribeToSystemEvent(
-                EVENT.UNPAUSED,
-                "Unpaused");
-
-            G.simConnect.SubscribeToSystemEvent(
-                EVENT.PAUSED,
-                "Paused");
-        }
-
-        void UnsubscribeFromSystemEvents()
-        {
-            try
-            {
-                G.simConnect.UnsubscribeFromSystemEvent(EVENT.SIM_START);
-                G.simConnect.UnsubscribeFromSystemEvent(EVENT.SIM_STOP);
-                G.simConnect.UnsubscribeFromSystemEvent(EVENT.UNPAUSED);
-                G.simConnect.UnsubscribeFromSystemEvent(EVENT.PAUSED);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("could not Unsubscribe to events. " + ex.Message.ToString());
-            }
         }
         #endregion
 
@@ -241,7 +144,7 @@ namespace FSX_EMPIRE
             //simconnect.OnRecvEventRaceEnd += new SimConnect.RecvEventRaceEndEventHandler(simconnect_OnRecvEventRaceEnd);
             //simconnect.OnRecvEventRaceLap += new SimConnect.RecvEventRaceLapEventHandler(simconnect_OnRecvEventRaceLap);
             //simconnect.OnRecvEventWeatherMode += new SimConnect.RecvEventWeatherModeEventHandler(simconnect_OnRecvEventWeatherMode);
-            G.simConnect.OnRecvException += new SimConnect.RecvExceptionEventHandler(Simconnect_OnRecvException);
+            G.simConnect.OnRecvException += new SimConnect.RecvExceptionEventHandler(SimConnect_Exceptions.Simconnect_OnRecvException);
             //simconnect.OnRecvNdbList += new SimConnect.RecvNdbListEventHandler(simconnect_OnRecvNdbList);
             //simconnect.OnRecvNull += new SimConnect.RecvNullEventHandler(simconnect_OnRecvNull);
             G.simConnect.OnRecvOpen += new SimConnect.RecvOpenEventHandler(Simconnect_OnRecvOpen);
@@ -262,22 +165,13 @@ namespace FSX_EMPIRE
             switch ((REQUEST)data.dwRequestID)
             {
                 case REQUEST.GOOGLE_EARTH:
-                    if (Paused == false)
-                    {
-                        Google.UpdateValues((SGoogleEarth)data.dwData[0]);
-                    }
+                    if (SystemEvent.IsPaused == false)
+                        GoogleEarth.OnRecvSimobjectDataBytype(data, camera);
                     break;
 
                 case REQUEST.COPILOT:
-                    SCoPilot si = (SCoPilot)data.dwData[0];
-                    if (Paused == false)
-                    {
-                        G.myPlane.UpdateValues(si);
-                        CoPilot.CheckAirSpeed(si);
-                        CoPilot.CheckManifoldPressure(si);
-                        CoPilot.CheckPropellerRPM(si);
-                        CoPilot.CheckCowlFlaps(si); 
-                    }
+                    if (SystemEvent.IsPaused == false)
+                        CoPilot.OnRecvSimobjectDataBytype(data);
                     break;
                 default:
                     MessageBox.Show("Unknown REQUEST ID: " + data.dwRequestID);
@@ -287,9 +181,9 @@ namespace FSX_EMPIRE
 
         void Simconnect_OnRecvOpen(SimConnect sender, SIMCONNECT_RECV_OPEN data)
         {
-            picSimConnect.Image = Properties.Resources.Green_Light;     // Update image so user knows their connected
-            G.camera.ResetFSXView();                                    // Make FSX view match Google Earth View
-            OnFsxConnectionOpen();                                      // Fire event in case we want to do something else on FrmMain
+            picSimConnect.Image = bRunning;                                         // Update image so user knows their connected
+            camera.ResetFSXView();                                                // Make FSX view match Google Earth View
+            OnConnectionOpen();                                                     // Fire event in case we want to do something else on FrmMain
         }
 
         void Simconnect_OnRecvQuit(SimConnect sender, SIMCONNECT_RECV data)
@@ -297,73 +191,23 @@ namespace FSX_EMPIRE
             CloseConnection();
         }
 
-        void Simconnect_OnRecvException(SimConnect sender, SIMCONNECT_RECV_EXCEPTION data)
-        {
-            SimConnect_Exceptions ex = new SimConnect_Exceptions();     // Class interpreting fsx exceptions
-            MessageBox.Show(
-                "Exception received: " + data.dwException +
-                ": " + ex.GetDescription((SIMCONNECT_EXCEPTION)data.dwException));
-        }
-
         void Simconnect_OnRecvEvent(SimConnect sender, SIMCONNECT_RECV_EVENT data)
         {
-            switch (data.uEventID)
-            {
-                case (uint)EVENT.SIM_START:
-                    {
-                        OnFsxSimStart();
-                        break;
-                    }
-                case (uint)EVENT.SIM_STOP:
-                    {
-                        OnFsxSimStop();
-                        break;
-                    }
-                case (uint)EVENT.PAUSED:
-                    {
-                        Paused = true;
-                        OnFsxPaused();
-                        break;
-                    }
-                case (uint)EVENT.UNPAUSED:
-                    {
-                        Paused = false;
-                        OnFsxUnpaused();
-                        break;
-                    }
-                case (uint)EVENT.CAMERA_LEFT:
-                    {
-                        G.camera.RotateLeft();
-                        break;
-                    }
-                case (uint)EVENT.CAMERA_RIGHT:
-                    {
-                        G.camera.RotateRight(); 
-                        break;
-                    }
-                case (uint)EVENT.CAMERA_UP:
-                    {
-                        G.camera.PitchUp();
-                        break;
-                    }
-                case (uint)EVENT.CAMERA_DOWN:
-                    {
-                        G.camera.PitchDown();
-                        break;
-                    }
-                default:
-                    {
-                        Console.WriteLine("UNKNOWN EVENT");
-                        break;
-                    }
-            }
+            if (SystemEvent.OnRecvEvent(data.uEventID))
+                return;
+
+            if (camera.OnRecvEvent(data.uEventID))
+                return;
+
+            Console.WriteLine("UNKNOWN EVENT");
         }
+    
         #endregion
 
         #region Public Functions (Called from FrmMain)
-        #region check if fsx is running
+        #region Check if fsx is running
         /// <summary>checks to see if fsx process is running</summary>
-        public bool IsFsxRunning()
+        public bool IsRunning()
         {
             //Process[] processlist = Process.GetProcesses();
             //foreach (Process theprocess in processlist)
@@ -382,7 +226,7 @@ namespace FSX_EMPIRE
         /// <returns>True if successful, False if not</returns>
         public bool OpenConnection()
         {
-            if (IsFsxRunning() == false)
+            if (IsRunning() == false)
             {
                 //Todo, could start it automatically....
                 switch (MessageBox.Show("FSX does not appear to be running.", "FSX Error", MessageBoxButtons.AbortRetryIgnore))
@@ -392,7 +236,7 @@ namespace FSX_EMPIRE
                     case DialogResult.Abort:
                         return false;
                     case DialogResult.Retry:
-                        if (IsFsxRunning() == false)
+                        if (IsRunning() == false)
                         {
                             MessageBox.Show("Still could not find fsx process. Aborting connection attempt.");
                             return false;
@@ -426,32 +270,12 @@ namespace FSX_EMPIRE
         {
             if (G.simConnect != null)
             {
-                UnsubscribeFromSystemEvents();                
+                SystemEvent.UnsubscribeAll();               
                 G.simConnect.Dispose();       // Dispose serves the same purpose as SimConnect_Close()
                 G.simConnect = null;
-                picSimConnect.Image = Properties.Resources.Red_Light;
-                OnFsxConnectionClosed();
+                picSimConnect.Image = bStopped; //FSX_EMPIRE.Properties.Resources.Red_Light;
+                OnConnectionClosed();
             }
-        }
-        #endregion
-
-        #region requests
-        public void RequestDataForCoPilot()
-        {
-            if (G.simConnect != null)
-            {
-                G.simConnect.RequestDataOnSimObjectType(
-                    REQUEST.COPILOT,
-                    DEFINITION.COPILOT,
-                    0,
-                    SIMCONNECT_SIMOBJECT_TYPE.USER);
-            }
-        }
-
-        public void RequestDataForGoogleEarth()
-        {
-            if (G.simConnect != null)
-                Google.RequestDataOnSimObjectType(); 
         }
         #endregion
 
@@ -460,16 +284,15 @@ namespace FSX_EMPIRE
         {
             if (G.simConnect != null)
             {
-
                 G.simConnect.TransmitClientEvent(
                     (uint)SimConnect.SIMCONNECT_OBJECT_ID_USER,
-                    EVENT.SIM_RATE_INCR,
+                    EventID.SIM_RATE_INCR,
                     (uint)0,
                     GROUP.SIMRATE,
                     SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY
                     );
 
-                CoPilot.Inc.AirSpeed *= 2;
+                CoPilot.Hold.AirSpeed *= 2;
             }
         }
 
@@ -479,13 +302,13 @@ namespace FSX_EMPIRE
             {
                 G.simConnect.TransmitClientEvent(
                 (uint)SimConnect.SIMCONNECT_OBJECT_ID_USER,
-                EVENT.SIM_RATE_DECR,
+                EventID.SIM_RATE_DECR,
                 (uint)0,
                 GROUP.SIMRATE,
                 SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY
                 );
 
-                CoPilot.Inc.AirSpeed /= 2;
+                CoPilot.Increment.AirSpeed /= 2;
             }
         }
         #endregion

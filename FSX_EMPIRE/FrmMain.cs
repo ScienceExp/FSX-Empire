@@ -37,8 +37,8 @@ namespace FSX_EMPIRE
         void CloseAll()
         {
             TimerSimConnectRequest.Enabled = false;
-            _ = Google.ServerStop();
-            FSX_SimConnect1.CloseConnection();
+            _ = SimConnect.GoogleEarth.ServerStop();
+            SimConnect.CloseConnection();
             G.speechSynth.Dispose();
             G.speechRecognition.Dispose();
         }
@@ -47,15 +47,15 @@ namespace FSX_EMPIRE
         #region My Events
         void InitializeMyEventsHandlers()
         {
-            Google.OnServerStopped += new Google.ServerStopped(this.ServerStopped);
-            Google.OnServerStarted += new Google.ServerStarted(this.ServerStarted);
-            Google.OnServerWaitingForRequest += new Google.ServerWaitingForRequest(this.ServerWaitingForRequest);
-            FSX_SimConnect1.OnFsxConnectionOpen += new FSX_SimConnect.FsxConnectionOpen(this.FsxConnectionOpen);
-            FSX_SimConnect1.OnFsxConnectionClosed += new FSX_SimConnect.FsxConnectionClosed(this.FsxConnectionClosed);
-            FSX_SimConnect1.OnFsxPaused += new FSX_SimConnect.FsxPaused(this.FsxPaused);
-            FSX_SimConnect1.OnFsxUnpaused += new FSX_SimConnect.FsxUnpaused(this.FsxUnpaused);
-            FSX_SimConnect1.OnFsxSimStart += new FSX_SimConnect.FsxSimStart(this.FsxSimStart);
-            FSX_SimConnect1.OnFsxSimStop += new FSX_SimConnect.FsxSimStop(this.FsxSimStop);
+            SimConnect.GoogleEarth.OnServerStopped += new Sim.Google.Earth.ServerStopped(this.ServerStopped);
+            SimConnect.GoogleEarth.OnServerStarted += new Sim.Google.Earth.ServerStarted(this.ServerStarted);
+            SimConnect.GoogleEarth.OnServerWaitingForRequest += new Sim.Google.Earth.ServerWaitingForRequest(this.ServerWaitingForRequest);
+            SimConnect.OnConnectionOpen += new Sim.Connect.ConnectionOpen(this.FsxConnectionOpen);
+            SimConnect.OnConnectionClosed += new Sim.Connect.ConnectionClosed(this.FsxConnectionClosed);
+            SimConnect.SystemEvent.OnPaused += new Sim.SystemEvent.Paused(this.FsxPaused);
+            SimConnect.SystemEvent.OnUnpaused += new Sim.SystemEvent.Unpaused(this.FsxUnpaused);
+            SimConnect.SystemEvent.OnSimStart += new Sim.SystemEvent.SimStart(this.FsxSimStart);
+            SimConnect.SystemEvent.OnSimStop += new Sim.SystemEvent.SimStop(this.FsxSimStop);
         }
 
         #region GoogleEarth Events
@@ -153,19 +153,20 @@ namespace FSX_EMPIRE
             string path = AppDomain.CurrentDomain.BaseDirectory + "settings.ini";
 
             #region Read GoogleEarth
-            _ = bool.TryParse(IniFile.ReadKey(path, "ServerEnabled", "GoogleEarth"), out Google.ServerEnabled);
-            _ = int.TryParse(IniFile.ReadKey(path, "ServerPort", "GoogleEarth"), out Google.ServerPort);
-            _ = double.TryParse(IniFile.ReadKey(path, "RequestRateSeconds", "GoogleEarth"), out Google.RequestRate);
+            _ = bool.TryParse(IniFile.ReadKey(path, "ServerEnabled", "GoogleEarth"), out SimConnect.GoogleEarth.ServerEnabled);
+            _ = int.TryParse(IniFile.ReadKey(path, "ServerPort", "GoogleEarth"), out SimConnect.GoogleEarth.ServerPort);
+            _ = double.TryParse(IniFile.ReadKey(path, "RequestRateSeconds", "GoogleEarth"), out SimConnect.GoogleEarth.RequestRate);
             #endregion 
 
             #region Read SimConnect
             if (int.TryParse(IniFile.ReadKey(path, "RequestRateMilliSeconds", "SimConnect"), out int i))
                 TimerSimConnectRequest.Interval = i;
 
-            G.camera.KeyLeft = IniFile.ReadKey(path, "CameraLeftKey", "SimConnect");
-            G.camera.KeyRight = IniFile.ReadKey(path, "CameraRightKey", "SimConnect");
-            G.camera.KeyUp = IniFile.ReadKey(path, "CameraUpKey", "SimConnect");
-            G.camera.KeyDown = IniFile.ReadKey(path, "CameraDownKey", "SimConnect");
+            SimConnect.camera.ReadINI(path);
+            //SimConnect.camera.KeyLeft = IniFile.ReadKey(path, "CameraLeftKey", "SimConnect");
+            //SimConnect.camera.KeyRight = IniFile.ReadKey(path, "CameraRightKey", "SimConnect");
+            //SimConnect.camera.KeyUp = IniFile.ReadKey(path, "CameraUpKey", "SimConnect");
+            //SimConnect.camera.KeyDown = IniFile.ReadKey(path, "CameraDownKey", "SimConnect");
             #endregion
 
             #region Read WebCamTracker
@@ -190,9 +191,9 @@ namespace FSX_EMPIRE
         #region Connect & Disconnect Buttons
         private void BtnConnect_Click(object sender, EventArgs e)
         {
-            if (FSX_SimConnect1.OpenConnection())       //todo:make auto connect
-                if (Google.ServerEnabled)
-                    Google.LoadKmlInGoogleEarth();
+            if (SimConnect.OpenConnection())       //todo:make auto connect
+                if (SimConnect.GoogleEarth.ServerEnabled)
+                    SimConnect.GoogleEarth.LoadKmlInGoogleEarth();
         }
 
         private void BtnDisconnect_Click(object sender, EventArgs e)
@@ -203,79 +204,78 @@ namespace FSX_EMPIRE
 
         private void TimerSimConnectRequest_Tick(object sender, EventArgs e)
         {
-            FSX_SimConnect1.RequestDataForCoPilot();
-            FSX_SimConnect1.RequestDataForGoogleEarth();
+            SimConnect.CoPilot.RequestDataOnSimObjectType();
+            SimConnect.GoogleEarth.RequestDataOnSimObjectType();
         }
 
         #region CoPilot Buttons
         private void BtnAirSpeedSet_Click(object sender, EventArgs e)
         {
             if (double.TryParse(txtAirSpeed.Text, out double v))
-                CoPilot.Hold.AirSpeed = v;
+                SimConnect.CoPilot.Hold.AirSpeed = v;
         }
 
         private void BtnAirSpeedOff_Click(object sender, EventArgs e)
         {
             txtAirSpeed.Text = "-1";
-            CoPilot.Hold.AirSpeed = -1.0;
+            SimConnect.CoPilot.Hold.AirSpeed = -1.0;
         }
 
         private void BtnSimRateInc_Click(object sender, EventArgs e)
         {
-            FSX_SimConnect1.SimRate_Inc();
+            SimConnect.SimRate_Inc();
         }
 
         private void BtnSimRateDec_Click(object sender, EventArgs e)
         {
-            FSX_SimConnect1.SimRate_Dec();
+            SimConnect.SimRate_Dec();
         }
 
         private void BtnManifoldPressureSet_Click(object sender, EventArgs e)
         {
             if (double.TryParse(txtManifoldPressure.Text, out double v))
-                CoPilot.Hold.ManifoldPressure = v;
+                SimConnect.CoPilot.Hold.ManifoldPressure = v;
         }
 
         private void BtnManifoldPressureOff_Click(object sender, EventArgs e)
         {
             txtManifoldPressure.Text = "-1";
-            CoPilot.Hold.ManifoldPressure = -1;
+            SimConnect.CoPilot.Hold.ManifoldPressure = -1;
         }
 
         private void BtnPropellerRPMSet_Click(object sender, EventArgs e)
         {
             if (double.TryParse(txtPropellerRPM.Text, out double v))
-                CoPilot.Hold.PropRPM = v;
+                SimConnect.CoPilot.Hold.PropRPM = v;
         }
 
         private void BtnPropellerRPMOff_Click(object sender, EventArgs e)
         {
             txtPropellerRPM.Text = "-1";
-            CoPilot.Hold.PropRPM = -1;
+            SimConnect.CoPilot.Hold.PropRPM = -1;
         }
 
         private void BtnCowlFlapsSet_Click(object sender, EventArgs e)
         {
             if (double.TryParse(txtCowlFlaps.Text, out double v))
-                CoPilot.Hold.CowlFlap = v;
+                SimConnect.CoPilot.Hold.CowlFlap = v;
         }
 
         private void BtnCowlFlapsOff_Click(object sender, EventArgs e)
         {
             txtCowlFlaps.Text = "-1";
-            CoPilot.Hold.CowlFlap = -1;
+            SimConnect.CoPilot.Hold.CowlFlap = -1;
         }
         #endregion
 
         #region WebCam
-        //bool CalibrationComplete = false;
+        bool CalibrationComplete = false;
+
         private void BtnCalibrate_Click(object sender, EventArgs e)
         {
             webCapture1.DoCalibration();
-            //todo probably save calibration? (More accurte to do each time though)
-            //CalibrationComplete = true;
+            CalibrationComplete = true;
         }
-        #endregion
 
         private void TimerUpdateCamera_Tick(object sender, EventArgs e)
         {
@@ -284,10 +284,11 @@ namespace FSX_EMPIRE
             //Console.WriteLine(webCapture1.TopMarker.X + " " + webCapture1.TopMarker.Y);
             //Console.WriteLine(webCapture1.BottomMarker.X + " " + webCapture1.BottomMarker.Y);
             float x = webCapture1.calibration.GetRotationLeftRight(webCapture1.TopMarker, webCapture1.BottomMarker);
-                float y = webCapture1.calibration.GetRotationUpDown(webCapture1.TopMarker, webCapture1.BottomMarker);
-                G.camera.SetPitchAndRotation(x, y);
-            Console.WriteLine(x + " " + y);
+            float y = webCapture1.calibration.GetRotationUpDown(webCapture1.TopMarker, webCapture1.BottomMarker);
+            SimConnect.camera.SetPitchAndRotation(x, y);
+            //Console.WriteLine(x + " " + y);
             //}
         }
+        #endregion
     }
 }

@@ -53,16 +53,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Airgraft_cfg.cs" />
-    <Compile Include="Global\Camera.cs" />
-    <Compile Include="CoPilot\CoPilot.cs" />
+    <Compile Include="SimConnect\Camera\Camera.cs" />
+    <Compile Include="SimConnect\CoPilot\CoPilot.cs" />
     <Compile Include="FrmMain.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="FrmMain.Designer.cs">
       <DependentUpon>FrmMain.cs</DependentUpon>
     </Compile>
-    <Compile Include="SimConnect\sCoPilot.cs" />
-    <Compile Include="SimConnect\sGoogleEarth.cs" />
+    <Compile Include="SimConnect\AirTrafficControl.cs" />
+    <Compile Include="SimConnect\CoPilot\Hold.cs" />
+    <Compile Include="SimConnect\CoPilot\Increment.cs" />
+    <Compile Include="SimConnect\EventIDs\EventID.cs" />
+    <Compile Include="SimConnect\GoogleEarth\sGoogleEarth.cs" />
     <Compile Include="SimConnect\FSX_SimConnect.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -70,16 +73,18 @@
       <DependentUpon>FSX_SimConnect.cs</DependentUpon>
     </Compile>
     <Compile Include="Global\Global.cs" />
-    <Compile Include="GoogleEarth\GoogleEarth.cs" />
+    <Compile Include="SimConnect\GoogleEarth\GoogleEarth.cs" />
     <Compile Include="Helper\IniFile.cs" />
     <Compile Include="Helper\MyExtensions.cs" />
-    <Compile Include="Plane.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SimConnect\SimConnect_Exceptions.cs" />
-    <Compile Include="CoPilot\Speech.cs" />
+    <Compile Include="SimConnect\Exceptions\SimConnect_Exceptions.cs" />
+    <Compile Include="Speech\Speech.cs" />
     <Compile Include="Helper\Attitude.cs" />
-    <Compile Include="CoPilot\SpeechRecognition.cs" />
+    <Compile Include="Speech\SpeechRecognition.cs" />
+    <Compile Include="SimConnect\Enums\SIMCONNECT_GROUP_PRIORITY.cs" />
+    <Compile Include="SimConnect\SystemEvents\SystemEvent.cs" />
+    <Compile Include="SimConnect\SystemEvents\SystemEventID.cs" />
     <Compile Include="WebCam\Calibration.cs" />
     <Compile Include="WebCam\DirectShow\amstream.cs" />
     <Compile Include="WebCam\DirectShow\amvideo.cs" />
@@ -127,7 +132,6 @@
     <Compile Include="WebCam\Extensions\ByteExtensions.cs" />
     <Compile Include="WebCam\Extensions\ColorExtensions.cs" />
     <Compile Include="WebCam\Filters.cs" />
-    <Compile Include="WebCam\Global.cs" />
     <Compile Include="WebCam\GrayScaleBuffer.cs" />
     <Compile Include="WebCam\ImageBuffer.cs" />
     <Compile Include="WebCam\Procesor.cs" />
@@ -143,6 +147,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="SimConnect\FSX_SimConnect.resx">
       <DependentUpon>FSX_SimConnect.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

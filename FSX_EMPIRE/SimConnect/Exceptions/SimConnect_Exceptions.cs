@@ -1,6 +1,10 @@
-﻿namespace FSX_EMPIRE
+﻿using Microsoft.FlightSimulator.SimConnect;
+using System.Windows.Forms;
+
+namespace Sim
 {
-    //Error codes found at https://msdn.microsoft.com/en-us/library/cc526983.aspx#SIMCONNECT_EXCEPTION
+    /// <summary>Exceptions thrown by SimConnect
+    /// <seealso href="https://msdn.microsoft.com/en-us/library/cc526983.aspx#SIMCONNECT_EXCEPTION">Documentation</seealso></summary>
     public enum SIMCONNECT_EXCEPTION
     {
         SIMCONNECT_EXCEPTION_NONE = 0,
@@ -42,9 +46,21 @@
         SIMCONNECT_EXCEPTION_OBJECT_ATC = 36,
         SIMCONNECT_EXCEPTION_OBJECT_SCHEDULE = 37,
     };
-    public class SimConnect_Exceptions
+
+    /// <summary>Exceptions thrown by SimConnect
+    /// <seealso href="https://msdn.microsoft.com/en-us/library/cc526983.aspx#SIMCONNECT_EXCEPTION">Documentation</seealso></summary>
+    public static class SimConnect_Exceptions
     {
-        public string GetDescription(SIMCONNECT_EXCEPTION errorCode)
+        /// <summary>This is the event handler that is called when an exception is raised in SimConnect. (Initialized in FSX_SimConnect.cs)</summary>
+        public static void Simconnect_OnRecvException(SimConnect sender, SIMCONNECT_RECV_EXCEPTION data)
+        {
+            MessageBox.Show(
+                "Exception received: " + data.dwException +
+                ": " + GetDescription((SIMCONNECT_EXCEPTION)data.dwException));
+        }
+
+        /// <summary>Converts error codes to string messages</summary>
+        static string GetDescription(SIMCONNECT_EXCEPTION errorCode)
         {
             switch (errorCode)
             {
@@ -129,4 +145,6 @@
             }
         }
     }
+
+
 }

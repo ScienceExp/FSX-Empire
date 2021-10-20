@@ -1,5 +1,4 @@
-﻿using FSX_EMPIRE;
-using System;
+﻿using System;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;

@@ -52,7 +52,7 @@
             this.label5 = new System.Windows.Forms.Label();
             this.txtCowlFlaps = new System.Windows.Forms.TextBox();
             this.picGoogleEarthConnect = new System.Windows.Forms.PictureBox();
-            this.FSX_SimConnect1 = new FSX_EMPIRE.FSX_SimConnect();
+            this.SimConnect = new Sim.Connect();
             this.label1 = new System.Windows.Forms.Label();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
@@ -270,12 +270,14 @@
             this.picGoogleEarthConnect.TabIndex = 32;
             this.picGoogleEarthConnect.TabStop = false;
             // 
-            // FSX_SimConnect1
+            // SimConnect
             // 
-            this.FSX_SimConnect1.Location = new System.Drawing.Point(1, 2);
-            this.FSX_SimConnect1.Name = "FSX_SimConnect1";
-            this.FSX_SimConnect1.Size = new System.Drawing.Size(76, 17);
-            this.FSX_SimConnect1.TabIndex = 8;
+            this.SimConnect.bRunning = global::FSX_EMPIRE.Properties.Resources.Green_Light;
+            this.SimConnect.bStopped = global::FSX_EMPIRE.Properties.Resources.Red_Light;
+            this.SimConnect.Location = new System.Drawing.Point(1, 2);
+            this.SimConnect.Name = "SimConnect";
+            this.SimConnect.Size = new System.Drawing.Size(76, 17);
+            this.SimConnect.TabIndex = 8;
             // 
             // label1
             // 
@@ -380,7 +382,7 @@
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.picGoogleEarthConnect);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.FSX_SimConnect1);
+            this.Controls.Add(this.SimConnect);
             this.Controls.Add(this.btnDisconnect);
             this.Controls.Add(this.btnConnect);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -403,7 +405,7 @@
         private System.Windows.Forms.Button btnConnect;
         private System.Windows.Forms.Button btnDisconnect;
         private System.Windows.Forms.Timer TimerSimConnectRequest;
-        private FSX_SimConnect FSX_SimConnect1;
+        private Sim.Connect SimConnect;
         private System.Windows.Forms.TextBox txtAirSpeed;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button btnAirSpeedSet;

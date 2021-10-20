@@ -3,10 +3,10 @@ using Microsoft.FlightSimulator.SimConnect;
 using System;
 using System.Runtime.InteropServices;
 
-namespace FSX_EMPIRE
+namespace Sim
 {
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
-    public class Camera        // Todo, would like to make this head tracking.
+    public class Camera
     {
         #region variables
         public double DeltaX;
@@ -28,7 +28,7 @@ namespace FSX_EMPIRE
         public string KeyDown = "N";
         #endregion
 
-        #region adjust camera heading, pitch
+        #region Adjust camera heading, pitch
         /// <summary>Pitches camera up by incº</summary>
         public void PitchUp()
         {
@@ -84,14 +84,10 @@ namespace FSX_EMPIRE
                 SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
                 HeadingDeg.ToFloat());
         }
-        #endregion
 
-        #region adjust camera heading, pitch based on degree
         /// <summary>Pitches camera up by incº (-)</summary>
         public void PitchUp(float degree)
         {
-            PitchDeg = (PitchDeg - inc).Normalize180();
-
             G.simConnect.CameraSetRelative6DOF(
                 SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
                 SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
@@ -99,15 +95,13 @@ namespace FSX_EMPIRE
                 degree,
                 SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
                 SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD);
-            
+
             PitchDeg = degree;
         }
 
         /// <summary>Pitches camera down by incº (+)</summary>
         public void PitchDown(float degree)
         {
-            PitchDeg = (PitchDeg + inc).Normalize180();
-
             G.simConnect.CameraSetRelative6DOF(
                 SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
                 SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
@@ -122,8 +116,6 @@ namespace FSX_EMPIRE
         /// <summary>Rotates camera right by incº (+)</summary>
         public void RotateRight(float degree)
         {
-            HeadingDeg = (HeadingDeg + inc).Normalize180();
-
             G.simConnect.CameraSetRelative6DOF(
                 SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
                 SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
@@ -138,8 +130,6 @@ namespace FSX_EMPIRE
         /// <summary>Rotates camera left by incº (-) </summary>
         public void RotateLeft(float degree)
         {
-            HeadingDeg = (HeadingDeg - inc).Normalize180();
-
             G.simConnect.CameraSetRelative6DOF(
                 SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
                 SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
@@ -168,9 +158,9 @@ namespace FSX_EMPIRE
 
         #endregion
 
-        #region calculate combined plane camera rotation
+        #region Calculate combined plane camera rotation
         /// <summary>Adds the plane and camera rotations together so result can be used in google earth</summary>
-        public Attitude CalculteRotations(SGoogleEarth fsx)
+        public Attitude CalculteRotations(Sim.Google.Earth.DataDefinition fsx)
         {
             //Order of Transformations in FSX
             //<altitude>    - translate along the Z axis to<altitude>
@@ -188,7 +178,7 @@ namespace FSX_EMPIRE
             if (sin < 0) sin2 *= -1;    // preserve sine
 
             // Heading rotated first in FSX so no need for trig. Just add Camera and Plane values
-            attitude.Heading = (fsx.PLANE_HEADING_DEGREES_TRUE + G.camera.HeadingDeg).Normalize360();
+            attitude.Heading = (fsx.PLANE_HEADING_DEGREES_TRUE + HeadingDeg).Normalize360();
 
             // Now need to apply plane pitch partly to pitch and partly to bank
             attitude.Pitch =                            // Google rotates in opposite direction so need to add '-'
@@ -209,30 +199,50 @@ namespace FSX_EMPIRE
         }
         #endregion
 
-        #region initialize
+        Enum myGroupID;
+        Enum myInputID;
+        public Camera(Enum groupID, Enum inputID)
+        {
+            myGroupID = groupID;
+            myInputID = inputID;
+        }
+
+        public void ReadINI(string path)
+        {
+            KeyLeft = IniFile.ReadKey(path, "CameraLeftKey", "SimConnect");
+            KeyRight = IniFile.ReadKey(path, "CameraRightKey", "SimConnect");
+            KeyUp = IniFile.ReadKey(path, "CameraUpKey", "SimConnect");
+            KeyDown = IniFile.ReadKey(path, "CameraDownKey", "SimConnect");
+        }
+
+        #region Initialize
         /// <summary>MapClientEventToSimEvent, AddClientEventToNotificationGroup, SetNotificationGroupPriority, MapInputEventToClientEvent</summary>
         public void Initialize()
         {
-            G.simConnect.MapClientEventToSimEvent(EVENT.CAMERA_LEFT, "PAN_LEFT");
-            G.simConnect.MapClientEventToSimEvent(EVENT.CAMERA_RIGHT, "PAN_RIGHT");
-            G.simConnect.MapClientEventToSimEvent(EVENT.CAMERA_UP, "PAN_UP");
-            G.simConnect.MapClientEventToSimEvent(EVENT.CAMERA_DOWN, "PAN_DOWN");
+            MapClientEventToSimEvent(EventID.PAN_LEFT);
+            MapClientEventToSimEvent(EventID.PAN_RIGHT);
+            MapClientEventToSimEvent(EventID.PAN_UP);
+            MapClientEventToSimEvent(EventID.PAN_DOWN);
+            //G.simConnect.MapClientEventToSimEvent(EventID.PAN_LEFT, "PAN_LEFT");
+            //G.simConnect.MapClientEventToSimEvent(EventID.PAN_RIGHT, "PAN_RIGHT");
+            //G.simConnect.MapClientEventToSimEvent(EventID.PAN_UP, "PAN_UP");
+            //G.simConnect.MapClientEventToSimEvent(EventID.PAN_DOWN, "PAN_DOWN");
 
-            G.simConnect.AddClientEventToNotificationGroup(GROUP.CAMERA, EVENT.CAMERA_LEFT, (bool)false);
-            G.simConnect.AddClientEventToNotificationGroup(GROUP.CAMERA, EVENT.CAMERA_RIGHT, (bool)false);
-            G.simConnect.AddClientEventToNotificationGroup(GROUP.CAMERA, EVENT.CAMERA_UP, (bool)false);
-            G.simConnect.AddClientEventToNotificationGroup(GROUP.CAMERA, EVENT.CAMERA_DOWN, (bool)false);
+            G.simConnect.AddClientEventToNotificationGroup(myGroupID, EventID.PAN_LEFT, false);
+            G.simConnect.AddClientEventToNotificationGroup(myGroupID, EventID.PAN_RIGHT, false);
+            G.simConnect.AddClientEventToNotificationGroup(myGroupID, EventID.PAN_UP, false);
+            G.simConnect.AddClientEventToNotificationGroup(myGroupID, EventID.PAN_DOWN, false);
 
-            G.simConnect.SetNotificationGroupPriority(GROUP.CAMERA, SimConnect.SIMCONNECT_GROUP_PRIORITY_HIGHEST);
+            G.simConnect.SetNotificationGroupPriority(myGroupID, SimConnect.SIMCONNECT_GROUP_PRIORITY_HIGHEST);
 
-            G.simConnect.MapInputEventToClientEvent(INPUT.KEYS, KeyLeft, EVENT.CAMERA_LEFT, (uint)0, (EVENT)SimConnect.SIMCONNECT_UNUSED, (uint)0, (bool)false);
-            G.simConnect.MapInputEventToClientEvent(INPUT.KEYS, KeyRight, EVENT.CAMERA_RIGHT, (uint)0, (EVENT)SimConnect.SIMCONNECT_UNUSED, (uint)0, (bool)false);
-            G.simConnect.MapInputEventToClientEvent(INPUT.KEYS, KeyUp, EVENT.CAMERA_UP, (uint)0, (EVENT)SimConnect.SIMCONNECT_UNUSED, (uint)0, (bool)false);
-            G.simConnect.MapInputEventToClientEvent(INPUT.KEYS, KeyDown, EVENT.CAMERA_DOWN, (uint)0, (EVENT)SimConnect.SIMCONNECT_UNUSED, (uint)0, (bool)false);
+            G.simConnect.MapInputEventToClientEvent(myInputID, KeyLeft, EventID.PAN_LEFT, 0, (EventID)SimConnect.SIMCONNECT_UNUSED, 0, false);
+            G.simConnect.MapInputEventToClientEvent(myInputID, KeyRight, EventID.PAN_RIGHT, 0, (EventID)SimConnect.SIMCONNECT_UNUSED, 0, false);
+            G.simConnect.MapInputEventToClientEvent(myInputID, KeyUp, EventID.PAN_UP, 0, (EventID)SimConnect.SIMCONNECT_UNUSED, 0, false);
+            G.simConnect.MapInputEventToClientEvent(myInputID, KeyDown, EventID.PAN_DOWN, 0, (EventID)SimConnect.SIMCONNECT_UNUSED, 0, false);
         }
         #endregion 
 
-        #region reset FSX view
+        #region ResetFSXView
         /// <summary>Resets view in FSX so it mathches google earth</summary>
         public void ResetFSXView()
         {
@@ -245,5 +255,57 @@ namespace FSX_EMPIRE
                 HeadingDeg.ToFloat());
         }
         #endregion
+
+        #region MapClientEventToSimEvent
+        /// <summary>The SimConnect_MapClientEventToSimEvent function associates a client defined event ID with a ESP event name.
+        /// <seealso href="https://docs.microsoft.com/en-us/previous-versions/microsoft-esp/cc526983(v=msdn.10)#simconnect_mapclienteventtosimevent">Documentation</seealso></summary>
+        void MapClientEventToSimEvent(EventID ID)
+        {
+            G.simConnect.MapClientEventToSimEvent(
+                //Specifies the ID of the client event.
+                ID,
+                /* Specifies the ESP event name. Refer to the Event IDs document for a list of event names (listed under String Name).
+                 * If the event name includes one or more periods (such as "Custom.Event" in the example below) then they are 
+                 * custom events specified by the client, and will only be recognized by another client (and not ESP) that has been 
+                 * coded to receive such events. No ESP events include periods. If no entry is made for this parameter, the event 
+                 * is private to the client.
+                 * Alternatively enter a decimal number in the format "#nnnn" or a hex number in the format "#0xnnnn",
+                 * where these numbers are in the range THIRD_PARTY_EVENT_ID_MIN and THIRD_PARTY_EVENT_ID_MAX, in order to receive
+                 * events from third-party add-ons to ESP.*/
+                ID.ToString());
+        }
+        #endregion
+
+        #region OnRecvEvent
+        /// <summary>Checks a SIMCONNECT_RECV_EVENT.uEventID to see if it is a FSX System Event. 
+        /// If so, it handles the event and returns true. Otherwise it returns false.</summary>
+        public bool OnRecvEvent(uint uEventID)
+        {
+            switch (uEventID)
+            {
+                case (uint)EventID.PAN_LEFT:
+                    {
+                        RotateLeft();
+                        return true;
+                    }
+                case (uint)EventID.PAN_RIGHT:
+                    {
+                        RotateRight();
+                        return true;
+                    }
+                case (uint)EventID.PAN_UP:
+                    {
+                        PitchUp();
+                        return true;
+                    }
+                case (uint)EventID.PAN_DOWN:
+                    {
+                        PitchDown();
+                        return true;
+                    }
+            }
+            return false;
+        }
+        #endregion 
     }
 }

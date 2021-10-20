@@ -13,7 +13,6 @@ namespace WebCam
         static Procesor procesor;
         //private volatile bool isFinished = true; //Could work on one frame and let others pass...
 
-
         #region Properties Box
         [Category("DirectShow"),
          Description("The width of the image captured by Direct Show")]
@@ -131,8 +130,6 @@ namespace WebCam
             if (!isEnabled)
                 return;
 
-            CreateTracker();
-
             DsDevice[] devices = DsDevice.GetDevicesOfCat(FilterCategory.VideoInputDevice);
             // foreach (DsDevice device in devices)
             // Console.WriteLine("Device Found: " + device.Name);
@@ -140,7 +137,10 @@ namespace WebCam
             if (devices.Length == 0)
                 MessageBox.Show("No Video Input Device Detected.");
             else
+            {
+                CreateTracker(); //ADDED
                 CaptureVideo();
+            }
         }
 
         #region Direct Show
@@ -284,6 +284,7 @@ namespace WebCam
                 }
             }
         }
+
         /// <summary>Returns the 1st capture device</summary>
         IBaseFilter FindCaptureDevice()
         {
@@ -303,6 +304,7 @@ namespace WebCam
             // An exception is thrown if cast fail
             return (IBaseFilter)source;
         }
+
         /// <summary>Gets references to intefaces</summary>
         void GetInterfaces()
         {
@@ -322,6 +324,7 @@ namespace WebCam
             DsError.ThrowExceptionForHR(hr);
             // Console.WriteLine("I started Sub Get interfaces , the result is : " + DsError.GetErrorText(hr));
         }
+
         /// <summary> Called in the Designer.cs Dispose function</summary>
         public void Closeinterfaces()
         {
@@ -399,6 +402,7 @@ namespace WebCam
             hr = VideoWindow.put_Visible(OABool.True);
             DsError.ThrowExceptionForHR(hr);
         }
+
         /// <summary> Call ResizeVideoWindow</summary>
         private void WebCapture_Resize(object sender, EventArgs e)
         {
@@ -412,6 +416,7 @@ namespace WebCam
 
             ResizeVideoWindow();
         }
+
         /// <summary> Resize video window to match owner window size</summary>
         public void ResizeVideoWindow()
         {
@@ -419,6 +424,7 @@ namespace WebCam
             if (VideoWindow != null)
                 VideoWindow.SetWindowPosition(0, 0, Width, ClientSize.Height);
         }
+
         /// <summary> Show or hide preview window </summary>
         public void ChangePreviewState(bool showVideo)
         {
@@ -448,6 +454,7 @@ namespace WebCam
                 CurrentState = PlayState.Stopped;
             }
         }
+
         /// <summary> Hangle Events</summary>
         public void HandleGraphEvent()
         {
@@ -466,6 +473,7 @@ namespace WebCam
                 // Insert event processing code here, if desired
             }
         }
+
         /// <summary> Config Sample Grabber so we can grab a image frame to work with </summary>
         private void ConfigureSampleGrabber(ISampleGrabber sampleGrabber)
         {
@@ -487,6 +495,7 @@ namespace WebCam
             hr = sampleGrabber.SetCallback(this, 1);
             DsError.ThrowExceptionForHR(hr);
         }
+
         /// <summary> Set Config </summary>
         private void SetConfigParams(ICaptureGraphBuilder2 capGraph, IBaseFilter capFilter, int iFrameRate, int iWidth, int iHeight)
         {
@@ -527,6 +536,7 @@ namespace WebCam
 
             DsUtils.FreeAMMediaType(mediaType);
         }
+ 
         /// <summary> Save Size Info</summary>
         private void SaveSizeInfo(ISampleGrabber sampleGrabber)
         {

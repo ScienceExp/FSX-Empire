@@ -1,6 +1,6 @@
-﻿namespace FSX_EMPIRE
+﻿namespace Sim
 {
-    partial class FSX_SimConnect
+    partial class Connect
     {
         /// <summary> 
         /// Required designer variable.
@@ -53,13 +53,13 @@
             this.picSimConnect.TabIndex = 33;
             this.picSimConnect.TabStop = false;
             // 
-            // FSX_SimConnect
+            // Connect
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.picSimConnect);
             this.Controls.Add(this.lblTitle);
-            this.Name = "FSX_SimConnect";
+            this.Name = "Connect";
             this.Size = new System.Drawing.Size(76, 17);
             ((System.ComponentModel.ISupportInitialize)(this.picSimConnect)).EndInit();
             this.ResumeLayout(false);

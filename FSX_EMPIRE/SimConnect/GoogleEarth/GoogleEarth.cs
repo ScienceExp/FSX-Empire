@@ -6,59 +6,74 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using System;
 using Microsoft.FlightSimulator.SimConnect;
+using System.Runtime.InteropServices;
 
-namespace FSX_EMPIRE
+namespace Sim.Google
 {
     /// <summary>Server to handle Google Earth Requests</summary>
-    class Google
+    public class Earth
     {
-        #region delegates
+        #region MyEvents
         public delegate void ServerStopped();
-        public static event ServerStopped OnServerStopped;
+        public event ServerStopped OnServerStopped;
 
         public delegate void ServerStarted();
-        public static event ServerStarted OnServerStarted;
+        public event ServerStarted OnServerStarted;
 
         public delegate void ServerWaitingForRequest();
-        public static event ServerWaitingForRequest OnServerWaitingForRequest;
+        public event ServerWaitingForRequest OnServerWaitingForRequest;
         #endregion
 
         #region declerations
+        /// <summary> To prevent 2 threads from accessing the same data </summary>
+        static object lockObject = new object();
+
         /// <summary> Used to see if we should enable the server</summary>
-        public static bool ServerEnabled = true;
+        public bool ServerEnabled = true;
 
         /// <summary>Port to use with local server</summary>
-        public static int ServerPort = 7890;
+        public int ServerPort = 7890;
 
         /// <summary>How fast Google Earth will request updates. 0.016 = 60 times per second</summary>
-        public static double RequestRate = 0.016;
+        public double RequestRate = 0.016;
 
         /// <summary> Holds a handle to google earth so we can close it in program if we wish. </summary>
-        public static Process ProcessGoogleEarth = null;
+        public Process ProcessGoogleEarth = null;
 
         /// <summary> Set 'ServerStop' to true and then call the server page to stop. </summary>
-        static bool stopServer = false;
+        bool stopServer = false;
 
         /// <summary> Used to tell if server is currently running before we try and start it. </summary>
-        static bool serverRunning = false;
+        bool serverRunning = false;
+
+        Enum myDefinitionID;
+        Enum myRequestID;
         #endregion
 
         #region variables sent to google earth
-        public static double Longitude { get; set; }
-        public static double Latitude { get; set; }
+        public double Longitude { get; set; }
+        public double Latitude { get; set; }
         /// <summary>in meters</summary
-        public static double Altitude { get; set; }
+        public double Altitude { get; set; }
         /// <summary> Values range from 0 to 360 degrees. </summary>
-        public static double Heading { get; set; }
+        public double Heading { get; set; }
         /// <summary>Values range from 0(Down) to 180(up) [clamped]</summary>
-        public static double Tilt { get; set; }
+        public double Tilt { get; set; }
         /// <summary>Values range from −180 to +180 degrees</summary>
-        public static double Roll { get; set; }
+        public double Roll { get; set; }
         #endregion
+
+        #region Constructor
+        public Earth(Enum DefinitionID, Enum RequestID)
+        {
+            myDefinitionID = DefinitionID;
+            myRequestID = RequestID;
+        }
+        #endregion 
 
         #region local server
         /// <summary> Starts the local server and sends the kml data on request.
-        static async Task StartServerAsync()
+        async Task StartServerAsync()
         {
             if (!ServerEnabled)
                 return;
@@ -94,7 +109,7 @@ namespace FSX_EMPIRE
                     sb.Append("<Camera id=\"ID\">\n");
 
                     //lock so variables are not accessed on another thread
-                    lock (G.lockObject)
+                    lock (lockObject)
                     {
                         sb.Append("<longitude>" + Longitude.ToString() + "</longitude>\n");
                         sb.Append("<latitude>" + Latitude.ToString() + "</latitude>\n");
@@ -136,7 +151,7 @@ namespace FSX_EMPIRE
         }
 
         /// <summary> Writes main KML NetworkLink file that will be opened in Google Earth. </summary>
-        public static void LoadKmlInGoogleEarth()
+        public void LoadKmlInGoogleEarth()
         {
             if (!ServerEnabled)
                 return;
@@ -181,7 +196,7 @@ namespace FSX_EMPIRE
         }
 
         /// <summary>Sets 'stopServer' to true and makes one last call to the server</summary>
-        public static async Task ServerStop()
+        public async Task ServerStop()
         {
             if (!ServerEnabled)
                 return;
@@ -201,13 +216,64 @@ namespace FSX_EMPIRE
         }
         #endregion
 
-        #region update values
-        /// <summary>Updates variables that will be sent to google earth</summary>
-        public static void UpdateValues(SGoogleEarth sge)
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+        public struct DataDefinition
         {
-            Attitude attitude = G.camera.CalculteRotations(sge);
+            public double PLANE_LATITUDE;
+            public double PLANE_LONGITUDE;
+            public double PLANE_ALTITUDE;
+            public double PLANE_HEADING_DEGREES_TRUE;
+            public double PLANE_PITCH_DEGREES;
+            public double PLANE_BANK_DEGREES;
+        }
 
-            lock (G.lockObject)
+        /// <summary>The AddToDataDefinition function is used to add a ESP simulation variable name to a client defined object definition.
+        /// <seealso href="https://docs.microsoft.com/en-us/previous-versions/microsoft-esp/cc526983(v=msdn.10)#simconnect_addtodatadefinition">Documentation</seealso></summary>
+        public void AddToDataDefinition()
+        {
+            G.simConnect.AddToDataDefinition(DEFINITION.GOOGLE_EARTH, "PLANE LATITUDE", "Degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+            G.simConnect.AddToDataDefinition(DEFINITION.GOOGLE_EARTH, "PLANE LONGITUDE", "Degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+            G.simConnect.AddToDataDefinition(DEFINITION.GOOGLE_EARTH, "PLANE ALTITUDE", "Meters", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+            G.simConnect.AddToDataDefinition(DEFINITION.GOOGLE_EARTH, "PLANE HEADING DEGREES TRUE", "Degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+            G.simConnect.AddToDataDefinition(DEFINITION.GOOGLE_EARTH, "PLANE PITCH DEGREES", "Degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+            G.simConnect.AddToDataDefinition(DEFINITION.GOOGLE_EARTH, "PLANE BANK DEGREES", "Degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+
+            G.simConnect.RegisterDataDefineStruct<DataDefinition>(DEFINITION.GOOGLE_EARTH);
+        }
+
+        #region request data from SimConnect
+        /// <summary>The RequestDataOnSimObjectType function is used to retrieve information about 
+        /// simulation objects of a given type that are within a specified radius of the user's aircraft.
+        /// <seealso href="https://docs.microsoft.com/en-us/previous-versions/microsoft-esp/cc526983(v=msdn.10)#simconnect_requestdataonsimobjecttype">Documentation</seealso></summary>
+        public void RequestDataOnSimObjectType()
+        {
+            if (G.simConnect != null)
+            {
+                G.simConnect.RequestDataOnSimObjectType(
+                    /*Specifies the ID of the client defined request. This is used later by the client to identify 
+                     * which data has been received. This value should be unique for each request, 
+                     * re-using a RequestID will overwrite any previous request using the same ID.*/
+                    myRequestID,
+                    /* Specifies the ID of the client defined data definition.*/
+                    myDefinitionID,
+                    /*Double word containing the radius in meters. If this is set to zero only information on the user
+                     * aircraft will be returned, although this value is ignored if type is set to SIMCONNECT_SIMOBJECT_TYPE_USER.
+                     * The error SIMCONNECT_EXCEPTION_OUT_OF_BOUNDS will be returned if a radius is given and it exceeds 
+                     * the maximum allowed (200000 meters, or 200 Km).*/
+                    0,
+                    /*Specifies the type of object to receive information on. One member of the SIMCONNECT_SIMOBJECT_TYPE enumeration type.*/
+                    SIMCONNECT_SIMOBJECT_TYPE.USER);
+            }
+        }
+        #endregion
+
+        /// <summary>Handles the data that has been revieved by a request and then sends back CoPilot data if needed.</summary>
+        public void OnRecvSimobjectDataBytype(SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE data, Camera camera)
+        {
+            DataDefinition sge = (DataDefinition)data.dwData[0];
+            Attitude attitude = camera.CalculteRotations(sge);
+
+            lock (lockObject)
             {
                 Longitude = sge.PLANE_LONGITUDE;
                 Latitude = sge.PLANE_LATITUDE;
@@ -218,18 +284,5 @@ namespace FSX_EMPIRE
                 Roll = attitude.Bank;
             }
         }
-        #endregion
-
-        #region request data from SimConnect
-        /// <summary>RequestDataOnSimObjectType</summary>
-        public static void RequestDataOnSimObjectType()
-        {
-            G.simConnect.RequestDataOnSimObjectType(
-                REQUEST.GOOGLE_EARTH,
-                DEFINITION.GOOGLE_EARTH,
-                0,
-                SIMCONNECT_SIMOBJECT_TYPE.USER);
-        }
-        #endregion 
     }
 }
