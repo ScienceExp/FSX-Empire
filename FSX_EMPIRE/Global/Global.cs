@@ -1,5 +1,6 @@
 ﻿using Microsoft.FlightSimulator.SimConnect;
 using Microsoft.Win32;
+using System;
 /// <summary> Global variables that can be accessed by any class </summary>
 class G
 {
@@ -21,6 +22,8 @@ class G
 
     /// <summary>Path to Aircraft.cfg</summary>
     public static string FSXAircraftPath { get { return FSXPath + @"\SimObjects\Airplanes\"; } }
+    /// <summary>Path to Settings.INI</summary>
+    public static string settingsPath = AppDomain.CurrentDomain.BaseDirectory + "settings.ini";
     #endregion
 
     #region aircrft.cfg

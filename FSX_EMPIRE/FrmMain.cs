@@ -20,7 +20,7 @@ namespace FSX_EMPIRE
             G.speechSynth = new Speech();
             G.speechRecognition = new SpeechRecognition();
             //speach.CoPilot("Welcome to FSX Empire!");
-            webCapture1.Start();
+            //webCapture1.Start();
 
         }
 
@@ -107,7 +107,7 @@ namespace FSX_EMPIRE
         {
             Console.WriteLine("Fsx connection opened");
             TimerSimConnectRequest.Enabled = true;
-            if (webCapture1.isEnabled)
+            if (webCapture1.IsEnabled)
                 TimerUpdateCamera.Enabled = true;
         }
         #endregion
@@ -117,7 +117,7 @@ namespace FSX_EMPIRE
         /// <summary> Writes default settings if the settings.ini file does not exist</summary>
         void WriteSettings()
         {
-            string path = AppDomain.CurrentDomain.BaseDirectory + "settings.ini";
+            string path = G.settingsPath;// AppDomain.CurrentDomain.BaseDirectory + "settings.ini";
 
             if (File.Exists(path))  //don't overwrite existing file
                 return;
@@ -130,12 +130,14 @@ namespace FSX_EMPIRE
         void LoadSettings()
         {
             WriteSettings(); //make sure file exists
-            string path = AppDomain.CurrentDomain.BaseDirectory + "settings.ini";
+            string path = G.settingsPath;// AppDomain.CurrentDomain.BaseDirectory + "settings.ini";
 
             SimConnect.ReadINI(path);
             TimerSimConnectRequest.Interval = SimConnect.RequestRateMilliSeconds;
 
             webCapture1.ReadINI(path);
+
+            chkEnableGoogleEarth.Checked = SimConnect.GoogleEarth.ServerEnabled;
         }
         #endregion
 
@@ -145,11 +147,13 @@ namespace FSX_EMPIRE
             if (SimConnect.OpenConnection())       //todo:make auto connect
                 if (SimConnect.GoogleEarth.ServerEnabled)
                     SimConnect.GoogleEarth.LoadKmlInGoogleEarth();
+            chkEnableGoogleEarth.Enabled = false; 
         }
 
         private void BtnDisconnect_Click(object sender, EventArgs e)
         {
             CloseAll();
+            chkEnableGoogleEarth.Enabled = true;
         }
         #endregion 
 
@@ -220,12 +224,12 @@ namespace FSX_EMPIRE
         #endregion
 
         #region WebCam
-        bool CalibrationComplete = false;
+        //bool CalibrationComplete = false;
 
         private void BtnCalibrate_Click(object sender, EventArgs e)
         {
             webCapture1.DoCalibration();
-            CalibrationComplete = true;
+            //CalibrationComplete = true;
         }
 
         private void TimerUpdateCamera_Tick(object sender, EventArgs e)
@@ -241,5 +245,31 @@ namespace FSX_EMPIRE
             //}
         }
         #endregion
+
+        private void btnStartTracker_Click(object sender, EventArgs e)
+        {
+            webCapture1.IsEnabled = !webCapture1.IsEnabled;
+            if (webCapture1.IsEnabled)
+            {
+                btnCalibrate.Enabled = true;
+                btnStartTracker.Text = "Stop tracker";
+            }
+            else
+            {
+                btnCalibrate.Enabled = false;
+                btnStartTracker.Text = "Start tracker";
+            }
+        }
+
+        private void chkEnableGoogleEarth_CheckedChanged(object sender, EventArgs e)
+        {
+            SimConnect.GoogleEarth.ServerEnabled = chkEnableGoogleEarth.Checked;
+            IniFile.WriteKey(G.settingsPath, "ServerEnabled", SimConnect.GoogleEarth.ServerEnabled.ToString(), "GoogleEarth");
+        }
+
+        private void chkEnableCoPilot_CheckedChanged(object sender, EventArgs e)
+        {
+            //SimConnect.CoPilot
+        }
     }
 }

@@ -55,12 +55,16 @@ namespace Sim.Google
         public double Latitude { get; set; }
         /// <summary>in meters</summary
         public double Altitude { get; set; }
+        /// <summary>in meters</summary
+        public double PlaneAboveground { get; set; }
         /// <summary> Values range from 0 to 360 degrees. </summary>
         public double Heading { get; set; }
         /// <summary>Values range from 0(Down) to 180(up) [clamped]</summary>
         public double Tilt { get; set; }
         /// <summary>Values range from −180 to +180 degrees</summary>
         public double Roll { get; set; }
+        /// <summary>Point at which to transition to above ground altitude. Seems buggy in google earth...</summary>
+        double TransitionAltitude = 10; //todo figure out why google earth gets bouncy using "relativeToGround"
         #endregion
 
         #region Constructor
@@ -77,6 +81,7 @@ namespace Sim.Google
             IniFile.WriteKey(path, "ServerEnabled", true.ToString(), "GoogleEarth");
             IniFile.WriteKey(path, "ServerPort", "7890", "GoogleEarth");
             IniFile.WriteKey(path, "RequestRateSeconds", "0.016", "GoogleEarth");
+            IniFile.WriteKey(path, "TransitionToGroundAltitude", "10", "GoogleEarth");
         }
 
         public void ReadINI(string path)
@@ -84,6 +89,7 @@ namespace Sim.Google
             _ = bool.TryParse(IniFile.ReadKey(path, "ServerEnabled", "GoogleEarth"), out ServerEnabled);
             _ = int.TryParse(IniFile.ReadKey(path, "ServerPort", "GoogleEarth"), out ServerPort);
             _ = double.TryParse(IniFile.ReadKey(path, "RequestRateSeconds", "GoogleEarth"), out RequestRate);
+            _ = double.TryParse(IniFile.ReadKey(path, "TransitionToGroundAltitude", "GoogleEarth"), out TransitionAltitude);
         }
         #endregion 
 
@@ -129,13 +135,20 @@ namespace Sim.Google
                     {
                         sb.Append("<longitude>" + Longitude.ToString() + "</longitude>\n");
                         sb.Append("<latitude>" + Latitude.ToString() + "</latitude>\n");
-                        sb.Append("<altitude>" + Altitude.ToString() + "</altitude>\n");
+                        if (PlaneAboveground < TransitionAltitude)
+                        {
+                            sb.Append("<altitude>" + PlaneAboveground.ToString() + "</altitude>\n");
+                            sb.Append("<altitudeMode>relativeToGround</altitudeMode>\n");
+                        }
+                        else
+                        {
+                            sb.Append("<altitude>" + Altitude.ToString() + "</altitude>\n");
+                            sb.Append("<altitudeMode>absolute</altitudeMode>\n");
+                        }
                         sb.Append("<heading>" + Heading.ToString() + "</heading>\n");
                         sb.Append("<tilt>" + Tilt.ToString() + "</tilt>\n");
                         sb.Append("<roll>" + Roll.ToString() + "</roll>\n");
                     }
-
-                    sb.Append("<altitudeMode>absolute</altitudeMode>\n");
                     sb.Append("</Camera>\n");
                     sb.Append("</Placemark>\n");
                     sb.Append("</kml>\n");
@@ -242,6 +255,7 @@ namespace Sim.Google
             public double PLANE_HEADING_DEGREES_TRUE;
             public double PLANE_PITCH_DEGREES;
             public double PLANE_BANK_DEGREES;
+            public double PLANE_ALT_ABOVE_GROUND;
         }
 
         /// <summary>The AddToDataDefinition function is used to add a ESP simulation variable name to a client defined object definition.
@@ -254,6 +268,7 @@ namespace Sim.Google
             G.simConnect.AddToDataDefinition(DEFINITION.GOOGLE_EARTH, "PLANE HEADING DEGREES TRUE", "Degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
             G.simConnect.AddToDataDefinition(DEFINITION.GOOGLE_EARTH, "PLANE PITCH DEGREES", "Degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
             G.simConnect.AddToDataDefinition(DEFINITION.GOOGLE_EARTH, "PLANE BANK DEGREES", "Degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+            G.simConnect.AddToDataDefinition(DEFINITION.GOOGLE_EARTH, "PLANE ALT ABOVE GROUND", "Meters", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
 
             G.simConnect.RegisterDataDefineStruct<DataDefinition>(DEFINITION.GOOGLE_EARTH);
         }
@@ -295,12 +310,25 @@ namespace Sim.Google
                 Longitude = sge.PLANE_LONGITUDE;
                 Latitude = sge.PLANE_LATITUDE;
                 Altitude = sge.PLANE_ALTITUDE;
+                PlaneAboveground = sge.PLANE_ALT_ABOVE_GROUND;
 
                 Heading = attitude.Heading;
                 Tilt = attitude.Pitch;
                 Roll = attitude.Bank;
             }
         }
+
+        //float LerpSpeed = 0.01f;
+        ///// <summary>Lerps between 2 values. (Used to smooth camera movement.)</summary>
+        //double Lerp(double startValue, double endValue)
+        //{
+        //    if (LerpSpeed < 0f)
+        //        LerpSpeed = 0f;
+        //    else if (LerpSpeed > 1f)
+        //        LerpSpeed = 1f;
+
+        //    return startValue + (endValue - startValue) * LerpSpeed;
+        //}
         #endregion
     }
 }

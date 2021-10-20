@@ -52,7 +52,6 @@
             this.label5 = new System.Windows.Forms.Label();
             this.txtCowlFlaps = new System.Windows.Forms.TextBox();
             this.picGoogleEarthConnect = new System.Windows.Forms.PictureBox();
-            this.SimConnect = new Sim.Connect();
             this.label1 = new System.Windows.Forms.Label();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
@@ -60,6 +59,10 @@
             this.webCapture1 = new WebCam.WebCapture();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.TimerUpdateCamera = new System.Windows.Forms.Timer(this.components);
+            this.chkEnableGoogleEarth = new System.Windows.Forms.CheckBox();
+            this.chkEnableCoPilot = new System.Windows.Forms.CheckBox();
+            this.btnStartTracker = new System.Windows.Forms.Button();
+            this.SimConnect = new Sim.Connect();
             ((System.ComponentModel.ISupportInitialize)(this.picGoogleEarthConnect)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -270,15 +273,6 @@
             this.picGoogleEarthConnect.TabIndex = 32;
             this.picGoogleEarthConnect.TabStop = false;
             // 
-            // SimConnect
-            // 
-            this.SimConnect.bRunning = global::FSX_EMPIRE.Properties.Resources.Green_Light;
-            this.SimConnect.bStopped = global::FSX_EMPIRE.Properties.Resources.Red_Light;
-            this.SimConnect.Location = new System.Drawing.Point(1, 2);
-            this.SimConnect.Name = "SimConnect";
-            this.SimConnect.Size = new System.Drawing.Size(76, 17);
-            this.SimConnect.TabIndex = 8;
-            // 
             // label1
             // 
             this.label1.AutoSize = true;
@@ -298,7 +292,7 @@
             this.tabControl1.Location = new System.Drawing.Point(1, 37);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(318, 224);
+            this.tabControl1.Size = new System.Drawing.Size(318, 231);
             this.tabControl1.TabIndex = 34;
             // 
             // tabPage1
@@ -309,13 +303,14 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(310, 198);
+            this.tabPage1.Size = new System.Drawing.Size(310, 205);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "WebCam";
             // 
             // btnCalibrate
             // 
             this.btnCalibrate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnCalibrate.Enabled = false;
             this.btnCalibrate.Location = new System.Drawing.Point(231, 6);
             this.btnCalibrate.Name = "btnCalibrate";
             this.btnCalibrate.Size = new System.Drawing.Size(73, 22);
@@ -332,12 +327,13 @@
             this.webCapture1.BackColor = System.Drawing.Color.White;
             this.webCapture1.CaptureFPS = 30;
             this.webCapture1.HorizontalResoltion = 1280;
+            this.webCapture1.IsEnabled = false;
             this.webCapture1.Location = new System.Drawing.Point(3, 2);
             this.webCapture1.MarkerMinMatch = 0.3F;
             this.webCapture1.MarkerSize = 32;
             this.webCapture1.Name = "webCapture1";
             this.webCapture1.ShowDebug = false;
-            this.webCapture1.Size = new System.Drawing.Size(304, 194);
+            this.webCapture1.Size = new System.Drawing.Size(304, 201);
             this.webCapture1.TabIndex = 0;
             this.webCapture1.VerticalResoltion = 720;
             // 
@@ -364,7 +360,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(310, 198);
+            this.tabPage2.Size = new System.Drawing.Size(310, 205);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "CoPilot";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -374,17 +370,61 @@
             this.TimerUpdateCamera.Interval = 34;
             this.TimerUpdateCamera.Tick += new System.EventHandler(this.TimerUpdateCamera_Tick);
             // 
+            // chkEnableGoogleEarth
+            // 
+            this.chkEnableGoogleEarth.AutoSize = true;
+            this.chkEnableGoogleEarth.Location = new System.Drawing.Point(92, 20);
+            this.chkEnableGoogleEarth.Name = "chkEnableGoogleEarth";
+            this.chkEnableGoogleEarth.Size = new System.Drawing.Size(124, 17);
+            this.chkEnableGoogleEarth.TabIndex = 35;
+            this.chkEnableGoogleEarth.Text = "Enable Google Earth";
+            this.chkEnableGoogleEarth.UseVisualStyleBackColor = true;
+            this.chkEnableGoogleEarth.CheckedChanged += new System.EventHandler(this.chkEnableGoogleEarth_CheckedChanged);
+            // 
+            // chkEnableCoPilot
+            // 
+            this.chkEnableCoPilot.AutoSize = true;
+            this.chkEnableCoPilot.Location = new System.Drawing.Point(215, 20);
+            this.chkEnableCoPilot.Name = "chkEnableCoPilot";
+            this.chkEnableCoPilot.Size = new System.Drawing.Size(99, 17);
+            this.chkEnableCoPilot.TabIndex = 37;
+            this.chkEnableCoPilot.Text = "Enable CoPolot";
+            this.chkEnableCoPilot.UseVisualStyleBackColor = true;
+            this.chkEnableCoPilot.CheckedChanged += new System.EventHandler(this.chkEnableCoPilot_CheckedChanged);
+            // 
+            // btnStartTracker
+            // 
+            this.btnStartTracker.Location = new System.Drawing.Point(1, 18);
+            this.btnStartTracker.Name = "btnStartTracker";
+            this.btnStartTracker.Size = new System.Drawing.Size(86, 20);
+            this.btnStartTracker.TabIndex = 2;
+            this.btnStartTracker.Text = "Start Tracker";
+            this.btnStartTracker.UseVisualStyleBackColor = true;
+            this.btnStartTracker.Click += new System.EventHandler(this.btnStartTracker_Click);
+            // 
+            // SimConnect
+            // 
+            this.SimConnect.bRunning = global::FSX_EMPIRE.Properties.Resources.Green_Light;
+            this.SimConnect.bStopped = global::FSX_EMPIRE.Properties.Resources.Red_Light;
+            this.SimConnect.Location = new System.Drawing.Point(1, 2);
+            this.SimConnect.Name = "SimConnect";
+            this.SimConnect.Size = new System.Drawing.Size(76, 17);
+            this.SimConnect.TabIndex = 8;
+            // 
             // FrmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(320, 260);
+            this.ClientSize = new System.Drawing.Size(320, 267);
+            this.Controls.Add(this.btnDisconnect);
+            this.Controls.Add(this.btnConnect);
+            this.Controls.Add(this.chkEnableCoPilot);
+            this.Controls.Add(this.chkEnableGoogleEarth);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.picGoogleEarthConnect);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.SimConnect);
-            this.Controls.Add(this.btnDisconnect);
-            this.Controls.Add(this.btnConnect);
+            this.Controls.Add(this.btnStartTracker);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FrmMain";
             this.Text = "FSX Empire";
@@ -432,6 +472,9 @@
         private WebCam.WebCapture webCapture1;
         private System.Windows.Forms.Button btnCalibrate;
         private System.Windows.Forms.Timer TimerUpdateCamera;
+        private System.Windows.Forms.CheckBox chkEnableGoogleEarth;
+        private System.Windows.Forms.CheckBox chkEnableCoPilot;
+        private System.Windows.Forms.Button btnStartTracker;
     }
 }
 

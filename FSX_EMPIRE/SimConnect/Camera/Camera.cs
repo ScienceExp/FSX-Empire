@@ -18,17 +18,19 @@ namespace Sim
         public double BankDeg;
         /// <summary> Range of allowable values is +180 to -180 degrees. </summary>
         public double HeadingDeg;
-
         /// <summary> Amount to adjust camera heading and pitch by</summary>
         public double HatSwitchSpeed = 1;
-
+        /// <summary>Used to tell if control 0 uses a d-pad or hat-switch as they are handled a little different</summary>
+        bool Joystick0IsDpad = true;
+        /// <summary>Holds the Group enum ID that can be found in Sim.Connect</summary>
         Enum myGroupID;
+        /// <summary>Holds the Input enum ID that can be found in Sim.Connect</summary>
         Enum myInputID;
         #endregion
 
         #region Adjust camera heading, pitch
         /// <summary>Pitches camera up by incº</summary>
-        public void PitchUp(double increment)
+        void PitchUp(double increment)
         {
             PitchDeg = (PitchDeg - increment).Normalize180();
 
@@ -42,7 +44,7 @@ namespace Sim
         }
 
         /// <summary>Pitches camera down by incº</summary>
-        public void PitchDown(double increment)
+        void PitchDown(double increment)
         {
             PitchDeg = (PitchDeg + increment).Normalize180();
 
@@ -56,7 +58,7 @@ namespace Sim
         }
 
         /// <summary>Rotates camera right by incº</summary>
-        public void RotateRight(double increment)
+        void RotateRight(double increment)
         {
             HeadingDeg = (HeadingDeg + increment).Normalize180();
 
@@ -70,7 +72,7 @@ namespace Sim
         }
 
         /// <summary>Rotates camera left by incº</summary>
-        public void RotateLeft(double increment)
+        void RotateLeft(double increment)
         {
             HeadingDeg = (HeadingDeg - increment).Normalize180();
 
@@ -98,6 +100,20 @@ namespace Sim
             HeadingDeg = headingDeg;
         }
 
+        /// <summary>Adds pitch and rotation to existing values</summary>
+        void AddPitchAndRotation(double headingInc, double pitchInc)
+        {
+            HeadingDeg = (HeadingDeg - headingInc).Normalize180();
+            PitchDeg = (PitchDeg - pitchInc).Normalize180();
+
+            G.simConnect.CameraSetRelative6DOF(
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                PitchDeg.ToFloat(),
+                SimConnect.SIMCONNECT_CAMERA_IGNORE_FIELD,
+                HeadingDeg.ToFloat());
+        }
         #endregion
 
         #region Calculate combined plane camera rotation
@@ -141,29 +157,27 @@ namespace Sim
         }
         #endregion
 
+        #region Constructor
         public Camera(Enum groupID, Enum inputID)
         {
             myGroupID = groupID;
             myInputID = inputID;
         }
+        #endregion 
 
         #region Read/Write INI Settings
         public void WriteINI(string path)
         {
             IniFile.WriteKey(path, "HatSwitchSpeed", HatSwitchSpeed.ToString(), "SimConnect");
+            IniFile.WriteKey(path, "Joystick0IsDpad", Joystick0IsDpad.ToString(), "SimConnect");
         }
 
         public void ReadINI(string path)
         {
             _ = double.TryParse(IniFile.ReadKey(path, "HatSwitchSpeed", "SimConnect"), out HatSwitchSpeed);
+            _ = bool.TryParse(IniFile.ReadKey(path, "Joystick0IsDpad", "SimConnect"), out Joystick0IsDpad);
         }
         #endregion
-
-        enum Joystick
-        {
-            one,
-            two,
-        }
 
         #region Initialize
         /// <summary>This initializes the elements to get the Hat Switch working to send values to Google Earth</summary>
@@ -173,14 +187,38 @@ namespace Sim
             G.simConnect.MapClientEventToSimEvent(EventID.VIEW_RIGHT, "VIEW_RIGHT");
             G.simConnect.MapClientEventToSimEvent(EventID.VIEW_LEFT, "VIEW_LEFT");
             G.simConnect.MapClientEventToSimEvent(EventID.VIEW_REAR, "VIEW_REAR");
+            G.simConnect.MapClientEventToSimEvent(EventID.VIEW_FORWARD_LEFT, "VIEW_FORWARD_LEFT");
+            G.simConnect.MapClientEventToSimEvent(EventID.VIEW_FORWARD_RIGHT, "VIEW_FORWARD_RIGHT");
+            G.simConnect.MapClientEventToSimEvent(EventID.VIEW_REAR_LEFT, "VIEW_REAR_LEFT");
+            G.simConnect.MapClientEventToSimEvent(EventID.VIEW_REAR_RIGHT, "VIEW_REAR_RIGHT");
+            G.simConnect.MapClientEventToSimEvent(EventID.PAN_RESET, "PAN_RESET");
+            G.simConnect.MapClientEventToSimEvent(EventID.PAN_UP, "PAN_UP");
 
             G.simConnect.AddClientEventToNotificationGroup(myGroupID, EventID.VIEW_FORWARD, false);
             G.simConnect.AddClientEventToNotificationGroup(myGroupID, EventID.VIEW_RIGHT, false);
             G.simConnect.AddClientEventToNotificationGroup(myGroupID, EventID.VIEW_LEFT, false);
             G.simConnect.AddClientEventToNotificationGroup(myGroupID, EventID.VIEW_REAR, false);
+            G.simConnect.AddClientEventToNotificationGroup(myGroupID, EventID.VIEW_FORWARD_LEFT, false);
+            G.simConnect.AddClientEventToNotificationGroup(myGroupID, EventID.VIEW_FORWARD_RIGHT, false);
+            G.simConnect.AddClientEventToNotificationGroup(myGroupID, EventID.VIEW_REAR_LEFT, false);
+            G.simConnect.AddClientEventToNotificationGroup(myGroupID, EventID.VIEW_REAR_RIGHT, false);
+            G.simConnect.AddClientEventToNotificationGroup(myGroupID, EventID.PAN_RESET, false);
+            G.simConnect.AddClientEventToNotificationGroup(myGroupID, EventID.PAN_UP, false);
 
-            G.simConnect.MapInputEventToClientEvent(myInputID, "joystick:0:POV:0", EventID.VIEW_FORWARD, 0, simconnect.unused, 0, false);
-            G.simConnect.MapInputEventToClientEvent(myInputID, "joystick:1:POV:0", EventID.VIEW_RIGHT, 0, simconnect.unused, 0, false);
+            if (Joystick0IsDpad)
+            {
+                // d-pad
+                G.simConnect.MapInputEventToClientEvent(myInputID, "joystick:0:POV:0", EventID.VIEW_FORWARD, 0, simconnect.unused, 0, false);
+                // hat-switch
+                G.simConnect.MapInputEventToClientEvent(myInputID, "joystick:1:POV:0", EventID.PAN_UP, 0, EventID.PAN_RESET, 0, false);
+            }
+            else
+            {
+                // d-pad
+                G.simConnect.MapInputEventToClientEvent(myInputID, "joystick:1:POV:0", EventID.VIEW_FORWARD, 0, simconnect.unused, 0, false);
+                // hat-switch
+                G.simConnect.MapInputEventToClientEvent(myInputID, "joystick:0:POV:0", EventID.PAN_UP, 0, EventID.PAN_RESET, 0, false);
+            }
 
             G.simConnect.SetNotificationGroupPriority(myGroupID, SimConnect.SIMCONNECT_GROUP_PRIORITY_HIGHEST);
 
@@ -208,9 +246,9 @@ namespace Sim
         /// If so, it handles the event and returns true. Otherwise it returns false.</summary>
         public bool OnRecvEvent(SIMCONNECT_RECV_EVENT data)
         {
-            Console.WriteLine(data.dwData);
             switch (data.uEventID)
             {
+                #region These fire when d-pad set to these events
                 case (uint)EventID.VIEW_FORWARD:
                     {
                         PitchUp(HatSwitchSpeed);
@@ -231,75 +269,85 @@ namespace Sim
                         RotateLeft(HatSwitchSpeed);
                         return true;
                     }
+                case (uint)EventID.VIEW_FORWARD_LEFT:
+                    {
+                        AddPitchAndRotation(HatSwitchSpeed, HatSwitchSpeed);
+                        return true;
+                    }
+                case (uint)EventID.VIEW_FORWARD_RIGHT:
+                    {
+                        AddPitchAndRotation(-HatSwitchSpeed, HatSwitchSpeed);
+                        return true;
+                    }
+                case (uint)EventID.VIEW_REAR_RIGHT:
+                    {
+                        AddPitchAndRotation(-HatSwitchSpeed, -HatSwitchSpeed);
+                        return true;
+                    }
+                case (uint)EventID.VIEW_REAR_LEFT:
+                    {
+                        AddPitchAndRotation(HatSwitchSpeed, -HatSwitchSpeed);
+                        return true;
+                    }
+                #endregion 
+                #region These only fire once when hat switch set to "hat pan"
+                case (uint)EventID.PAN_RESET:
+                    {
+                        SetPitchAndRotation(0, 0);      //matches how fsx does it
+                        return true;
+                    }
+                case (uint)EventID.PAN_UP:
+                    {
+                        switch ((uint)data.dwData)
+                        {
+                            case (uint)27000:               //27000 left
+                                {
+                                    SetPitchAndRotation(-90, 0);
+                                    return true;
+                                }
+                            case (uint)31500:               //31500 forward left
+                                {
+                                    SetPitchAndRotation(-45, 0);
+                                    return true;
+                                }
+                            case (uint)18000:               //18000 rear
+                                {
+                                    SetPitchAndRotation(180, 0);
+                                    return true;
+                                }
+                            case (uint)22500:               //22500 rear left
+                                {
+                                    SetPitchAndRotation(-135, 0);
+                                    return true;
+                                }
+                            case (uint)9000:                //9000 right
+                                {
+                                    SetPitchAndRotation(90, 0);
+                                    return true;
+                                }
+                            case (uint)4500:                //4500 forward right
+                                {
+                                    SetPitchAndRotation(45, 0);
+                                    return true;
+                                }
+                            case (uint)13500:               //13500 rear right
+                                {
+                                    SetPitchAndRotation(135, 0);
+                                    return true;
+                                }
+                            case (uint)0:                   //0 facing ahead
+                                {
+                                    SetPitchAndRotation(0, 0);
+                                    return true;
+                                }
+                            default:
+                                return true;
+                        }
+                    }
+                    #endregion
             }
             return false;
         }
-        #endregion 
-
-        #region Old Junk
-        #region MapClientEventToSimEvent
-        /// <summary>The MapClientEventToSimEvent function associates a client defined event ID with a ESP event name.
-        /// <seealso href="https://docs.microsoft.com/en-us/previous-versions/microsoft-esp/cc526983(v=msdn.10)#simconnect_mapclienteventtosimevent">Documentation</seealso></summary>
-        void MapClientEventToSimEvent(EventID ID)
-        {
-            G.simConnect.MapClientEventToSimEvent(
-                //Specifies the ID of the client event.
-                ID,
-                 /* Specifies the ESP event name. Refer to the Event IDs document for a list of event names (listed under String Name).
-                  * If the event name includes one or more periods (such as "Custom.Event" in the example below) then they are 
-                  * custom events specified by the client, and will only be recognized by another client (and not ESP) that has been 
-                  * coded to receive such events. No ESP events include periods. If no entry is made for this parameter, the event 
-                  * is private to the client.
-                  * Alternatively enter a decimal number in the format "#nnnn" or a hex number in the format "#0xnnnn",
-                  * where these numbers are in the range THIRD_PARTY_EVENT_ID_MIN and THIRD_PARTY_EVENT_ID_MAX, in order to receive
-                  * events from third-party add-ons to ESP.*/
-                 ID.ToString());
-        }
-        #endregion
-
-        #region AddClientEventToNotificationGroup
-        /// <summary>The SimConnect_AddClientEventToNotificationGroup function is used to add an individual client defined event to a notification group.
-        /// <seealso href="https://docs.microsoft.com/en-us/previous-versions/microsoft-esp/cc526983(v=msdn.10)#simconnect_addclienteventtonotificationgroup">Documentation</seealso></summary>
-        void AddClientEventToNotificationGroup(EventID ID)
-        {
-            G.simConnect.AddClientEventToNotificationGroup(
-                //Specifies the ID of the client defined group.
-                myGroupID,
-                //Specifies the ID of the client defined event.
-                ID,
-                /*[in, optional]  Boolean, True indicates that the event will be masked by this client and will not be 
-                 * transmitted to any more clients, possibly including ESP itself (if the priority of the client exceeds that of ESP).
-                 * False is the default. See the explanation of SimConnect Priorities.*/
-                false);
-        }
-        #endregion
-
-        #region MapInputEventToClientEvent
-        /// <summary>The SimConnect_MapInputEventToClientEvent function is used to connect input events (such as keystrokes, joystick or mouse movements) with the sending of appropriate event notifications.
-        /// <seealso href="https://docs.microsoft.com/en-us/previous-versions/microsoft-esp/cc526983(v=msdn.10)#simconnect_mapinputeventtoclientevent">Documentation</seealso></summary>
-        void MapInputEventToClientEvent(EventID ID, string input)
-        {
-            G.simConnect.MapInputEventToClientEvent(
-                // Specifies the ID of the client defined input group that the input event is to be added to.
-                myInputID,
-                /*Pointer to a null-terminated string containing the definition of the input events 
-                 * (keyboard keys, mouse or joystick events, for example). 
-                 * See the Remarks and example below for a range of possibilities. */
-                input,
-                /*Specifies the ID of the down, and default, event. This is the client defined event that is 
-                 * triggered when the input event occurs. If only an up event is required, set this to SIMCONNECT_UNUSED.*/
-                ID,
-                //Specifies an optional numeric value, which will be returned when the down event occurs.
-                0,
-                /*Specifies the ID of the up event. This is the client defined event that is triggered when the up action occurs.*/
-                simconnect.unused,
-                //Specifies an optional numeric value, which will be returned when the up event occurs.
-                0,
-                /* If set to true, specifies that the client will mask the event, and no other lower priority clients will receive it.
-                 * The default is false.*/
-                false);
-        }
-        #endregion
         #endregion 
     }
 }

@@ -9,9 +9,33 @@ namespace WebCam
 {
     public partial class WebCapture : UserControl, ISampleGrabberCB
     {
-        public bool isEnabled = true ;
+        bool isEnabled = false;
+
+        /// <summary>Enables or disables the webcam and head tracker</summary>
+        public bool IsEnabled
+        {
+            get { return isEnabled; }
+            set
+            {
+                isEnabled = value;
+                //IniFile.WriteKey(G.settingsPath, "HeadTrackerEnabled", isEnabled.ToString(), "WebCamTracker");
+                if (CurrentState != PlayState.Stopped)
+                {
+                    Closeinterfaces();
+                    CurrentState = PlayState.Stopped;
+                }
+                if (value == true)
+                {
+                    if (CurrentState != PlayState.Running)
+                    {
+                        Start();
+                    }
+                }
+            }
+        }
+       
         static Procesor procesor;
-        //private volatile bool isFinished = true; //Could work on one frame and let others pass...
+        //private volatile bool isFinished = true; //Could work on one frame and let others pass, if more speed is needed...
 
         #region Properties Box
         [Category("DirectShow"),
@@ -128,7 +152,7 @@ namespace WebCam
         #region Read/Write INI Settings
         public void WriteINI(string path)
         {
-            IniFile.WriteKey(path, "CameraEnabled", true.ToString(), "WebCamTracker");
+            //IniFile.WriteKey(path, "HeadTrackerEnabled", true.ToString(), "WebCamTracker");
             IniFile.WriteKey(path, "FPS", "30", "WebCamTracker");
             IniFile.WriteKey(path, "VerticalResoltion", "720", "WebCamTracker");
             IniFile.WriteKey(path, "HorizontalResoltion", "1280", "WebCamTracker");
@@ -138,7 +162,8 @@ namespace WebCam
         }
         public void ReadINI(string path)
         {
-            _ = bool.TryParse(IniFile.ReadKey(path, "CameraEnabled", "WebCamTracker"), out isEnabled);
+            //_ = bool.TryParse(IniFile.ReadKey(path, "HeadTrackerEnabled", "WebCamTracker"), out bool is_Enabled);
+            //isEnabled = is_Enabled;
             _ = int.TryParse(IniFile.ReadKey(path, "FPS", "WebCamTracker"), out int FPS);
             CaptureFPS = FPS;
             _ = int.TryParse(IniFile.ReadKey(path, "VerticalResoltion", "WebCamTracker"), out int verticalResolution);
@@ -156,8 +181,10 @@ namespace WebCam
 
         public void Start()
         {
-            if (!isEnabled)
+            if (!IsEnabled)
                 return;
+
+            Console.WriteLine("Starting Direct Show");
 
             DsDevice[] devices = DsDevice.GetDevicesOfCat(FilterCategory.VideoInputDevice);
             // foreach (DsDevice device in devices)
@@ -241,6 +268,9 @@ namespace WebCam
 
             try
             {
+                // Remember current state
+                CurrentState = PlayState.Running;
+
                 // Get DirectShow interfaces
                 GetInterfaces();
                 // Attach the filter graph to the capture graph
@@ -357,6 +387,8 @@ namespace WebCam
         /// <summary> Called in the Designer.cs Dispose function</summary>
         public void Closeinterfaces()
         {
+            Console.WriteLine("Closing Direct Show");
+
             // stop previewing data
             if (MediaControl != null)
                 MediaControl.StopWhenReady();
