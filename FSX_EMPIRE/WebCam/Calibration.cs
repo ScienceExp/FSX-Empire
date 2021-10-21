@@ -53,17 +53,23 @@ namespace WebCam
         float amountUp;
         /// <summary>This is the amount of pixels that make up the 'down' rotation. It takes into account the offset.</summary>
         float amountDown;
+        /// <summary>holds half the width of the tracker marker size when calibrated</summary>
+        public float scale;
+        /// <summary>used to calculate if we are in zoom mode or not</summary>
+        public float scaleFactor =0.95f;
         #endregion
 
         #region Read/Write Calibration.ini
         readonly string path = AppDomain.CurrentDomain.BaseDirectory + "Calibration.ini";
 
         /// <summary>Writes values to ini if the file does not exist</summary>
-        public void WriteINI()
+        public void WriteINI(bool force = false)
         {
-            if (File.Exists(path))  //don't overwrite existing file
+            if (File.Exists(path)&&!force)  //don't overwrite existing file
                 return;
 
+            IniFile.WriteKey(path, "scale", scale.ToString(), "Tracker");
+            IniFile.WriteKey(path, "scaleFactor", scaleFactor.ToString(), "Tracker");
             IniFile.WriteKey(path, "offsetx", offsetx.ToString(), "Tracker");
             IniFile.WriteKey(path, "offsety", offsety.ToString(), "Tracker");
             IniFile.WriteKey(path, "maxLeft", maxLeft.ToString(), "Tracker");
@@ -92,6 +98,8 @@ namespace WebCam
         public void ReadINI()
         {
             WriteINI(); // Make sure file exists
+            _ = float.TryParse(IniFile.ReadKey(path, "scale", "Tracker"), out scale);
+            _ = float.TryParse(IniFile.ReadKey(path, "scaleFactor", "Tracker"), out scaleFactor);
             _ = float.TryParse(IniFile.ReadKey(path, "offsetx", "Tracker"), out offsetx);
             _ = float.TryParse(IniFile.ReadKey(path, "offsety", "Tracker"), out offsety);
             _ = float.TryParse(IniFile.ReadKey(path, "maxLeft", "Tracker"), out maxLeft);
@@ -137,8 +145,10 @@ namespace WebCam
         public void DoCalibration(ref Tracker tracker)       
         {
             if (MessageBox.Show("Look straight ahead at your screen.\n Click 'OK' to capture orientation.", "Calibration Step 1", MessageBoxButtons.OK) == DialogResult.OK)
+            {
                 SetCenter(tracker.MarkerLocations[0], tracker.MarkerLocations[1]);
-
+                scale = tracker.Scale;
+            }
             if (MessageBox.Show("Look as far left as you normally would in game.\n Make sure trackers are still being read. \nClick 'OK' to capture orientation.", "Calibration Step 2", MessageBoxButtons.OK) == DialogResult.OK)
                 SetMaxLeftRotation(tracker.MarkerLocations[0], tracker.MarkerLocations[1]);
 
@@ -155,6 +165,8 @@ namespace WebCam
                 enableContinualCalibration = true;
             else
                 enableContinualCalibration = false;
+
+            WriteINI(true); 
         }
 
         /// <summary>Sets the offsets while the head is in a neutral position</summary>
@@ -318,7 +330,7 @@ namespace WebCam
 
         #region Lerp
         /// <summary>Speed of camera transition from one position to another. (Range = 0 to 1)</summary>
-        float cameraLerpSpeed = 0.2f;
+        float cameraLerpSpeed = 0.1f;
         /// <summary>Lerps between 2 values. (Used to smooth camera movement.)</summary>
         float Lerp(float startValue, float endValue)
         {

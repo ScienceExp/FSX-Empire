@@ -12,17 +12,20 @@ namespace Sim
     enum DEFINITION : uint
     {
         COPILOT,
+        CoPilotReadOnly,
         GOOGLE_EARTH,
     }
 
     enum REQUEST : uint
     {
         COPILOT,
+        CoPilotReadOnly,
         GOOGLE_EARTH,
     };
 
     enum NotificationGroup : uint
     {
+        COPILOT,
         SIMRATE,
         CAMERA,
     }
@@ -95,7 +98,7 @@ namespace Sim
         {
             InitializeComponent();
             SystemEvent = new Sim.SystemEvent();
-            CoPilot = new CoPilot.MyCoPilot(DEFINITION.COPILOT, REQUEST.COPILOT);
+            CoPilot = new CoPilot.MyCoPilot();
             GoogleEarth = new Google.Earth(DEFINITION.GOOGLE_EARTH, REQUEST.GOOGLE_EARTH);
             camera = new Camera(NotificationGroup.CAMERA ,InputGroup.KEYS );
             //Console.WriteLine("unused " + (uint)SimConnect.SIMCONNECT_UNUSED); // = 4294967295
@@ -123,7 +126,8 @@ namespace Sim
             {
                 InitializeEventHandlers();
                 MapClientEventToSimEvent();
-                CoPilot.AddToDataDefinition();
+                CoPilot.AddSettableDefinitions();
+                CoPilot.AddReadonlyDefinitions();
                 GoogleEarth.AddToDataDefinition();
                 SystemEvent.Subscribe();
 
@@ -196,7 +200,11 @@ namespace Sim
 
                 case REQUEST.COPILOT:
                     if (SystemEvent.IsPaused == false)
-                        CoPilot.OnRecvSimobjectDataBytype(data);
+                        CoPilot.OnRecvSettableData(data);
+                    break;
+                case REQUEST.CoPilotReadOnly:
+                    if (SystemEvent.IsPaused == false)
+                        CoPilot.OnRecvReadOnlyData(data);
                     break;
                 default:
                     MessageBox.Show("Unknown REQUEST ID: " + data.dwRequestID);

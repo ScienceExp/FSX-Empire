@@ -20,7 +20,6 @@ namespace FSX_EMPIRE
             G.speechSynth = new Speech();
             G.speechRecognition = new SpeechRecognition();
             //speach.CoPilot("Welcome to FSX Empire!");
-            //webCapture1.Start();
 
         }
 
@@ -106,9 +105,13 @@ namespace FSX_EMPIRE
         private void FsxConnectionOpen()
         {
             Console.WriteLine("Fsx connection opened");
-            TimerSimConnectRequest.Enabled = true;
+            if (SimConnect.CoPilot.IsEnabled || SimConnect.GoogleEarth.ServerEnabled)
+                TimerSimConnectRequest.Enabled = true;
             if (webCapture1.IsEnabled)
+            {
+                SimConnect.CoPilot.ZOOM_1X(); 
                 TimerUpdateCamera.Enabled = true;
+            }
         }
         #endregion
         #endregion
@@ -159,21 +162,29 @@ namespace FSX_EMPIRE
 
         private void TimerSimConnectRequest_Tick(object sender, EventArgs e)
         {
-            SimConnect.CoPilot.RequestDataOnSimObjectType();
-            SimConnect.GoogleEarth.RequestDataOnSimObjectType();
+            if (SimConnect.CoPilot.IsEnabled)
+            {
+                SimConnect.CoPilot.RequestSettableData();
+                SimConnect.CoPilot.RequestReadOnlyData();
+            }
+
+            if (SimConnect.GoogleEarth.ServerEnabled)
+            {
+                SimConnect.GoogleEarth.RequestDataOnSimObjectType();
+            }
         }
 
         #region CoPilot Buttons
         private void BtnAirSpeedSet_Click(object sender, EventArgs e)
         {
-            if (double.TryParse(txtAirSpeed.Text, out double v))
+            if (float.TryParse(txtAirSpeed.Text, out float v))
                 SimConnect.CoPilot.Hold.AirSpeed = v;
         }
 
         private void BtnAirSpeedOff_Click(object sender, EventArgs e)
         {
             txtAirSpeed.Text = "-1";
-            SimConnect.CoPilot.Hold.AirSpeed = -1.0;
+            SimConnect.CoPilot.Hold.AirSpeed = -1.0f;
         }
 
         private void BtnSimRateInc_Click(object sender, EventArgs e)
@@ -188,7 +199,7 @@ namespace FSX_EMPIRE
 
         private void BtnManifoldPressureSet_Click(object sender, EventArgs e)
         {
-            if (double.TryParse(txtManifoldPressure.Text, out double v))
+            if (float.TryParse(txtManifoldPressure.Text, out float v))
                 SimConnect.CoPilot.Hold.ManifoldPressure = v;
         }
 
@@ -200,7 +211,7 @@ namespace FSX_EMPIRE
 
         private void BtnPropellerRPMSet_Click(object sender, EventArgs e)
         {
-            if (double.TryParse(txtPropellerRPM.Text, out double v))
+            if (float.TryParse(txtPropellerRPM.Text, out float v))
                 SimConnect.CoPilot.Hold.PropRPM = v;
         }
 
@@ -212,7 +223,7 @@ namespace FSX_EMPIRE
 
         private void BtnCowlFlapsSet_Click(object sender, EventArgs e)
         {
-            if (double.TryParse(txtCowlFlaps.Text, out double v))
+            if (float.TryParse(txtCowlFlaps.Text, out float v))
                 SimConnect.CoPilot.Hold.CowlFlap = v;
         }
 
@@ -224,25 +235,40 @@ namespace FSX_EMPIRE
         #endregion
 
         #region WebCam
-        //bool CalibrationComplete = false;
-
         private void BtnCalibrate_Click(object sender, EventArgs e)
         {
             webCapture1.DoCalibration();
-            //CalibrationComplete = true;
         }
 
+        int zoomlvl = 0;
+        int zoomMax = 4;
         private void TimerUpdateCamera_Tick(object sender, EventArgs e)
         {
-            //if (CalibrationComplete)
-            //{
-            //Console.WriteLine(webCapture1.TopMarker.X + " " + webCapture1.TopMarker.Y);
-            //Console.WriteLine(webCapture1.BottomMarker.X + " " + webCapture1.BottomMarker.Y);
             float x = webCapture1.calibration.GetRotationLeftRight(webCapture1.TopMarker, webCapture1.BottomMarker);
             float y = webCapture1.calibration.GetRotationUpDown(webCapture1.TopMarker, webCapture1.BottomMarker);
             SimConnect.camera.SetPitchAndRotation(x, y);
-            //Console.WriteLine(x + " " + y);
-            //}
+            float Scale = webCapture1.calibration.scale / webCapture1.TrackerScale;
+            Console.WriteLine(webCapture1.calibration.scale + " " + webCapture1.TrackerScale);
+            if (Scale < webCapture1.calibration.scaleFactor)
+            {
+                if (zoomlvl < zoomMax)
+                {
+                    SimConnect.CoPilot.ZOOM_OUT();
+                    zoomlvl++;
+                }
+            }
+            else
+            {
+                if (zoomlvl > 0)
+                {
+                    SimConnect.CoPilot.ZOOM_IN();
+                    zoomlvl--;
+                }
+                //if (webCapture1.TrackerScale< webCapture1.calibration.scale)
+                //{
+                //     webCapture1.calibration.scale= webCapture1.TrackerScale;
+                //}
+            }
         }
         #endregion
 
@@ -269,7 +295,13 @@ namespace FSX_EMPIRE
 
         private void chkEnableCoPilot_CheckedChanged(object sender, EventArgs e)
         {
-            //SimConnect.CoPilot
+            SimConnect.CoPilot.IsEnabled = chkEnableCoPilot.Checked;
+        }
+
+        private void btnTest_Click(object sender, EventArgs e)
+        {
+            //SimConnect.CoPilot.TransmitEvent(Sim.EventID.AP_ALT_VAR_INC);
+            SimConnect.CoPilot.myReadOnlyData.AUTOPILOT_ALTITUDE_LOCK_VAR = 6000;
         }
     }
 }

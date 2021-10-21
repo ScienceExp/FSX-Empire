@@ -56,13 +56,14 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.btnCalibrate = new System.Windows.Forms.Button();
-            this.webCapture1 = new WebCam.WebCapture();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.TimerUpdateCamera = new System.Windows.Forms.Timer(this.components);
             this.chkEnableGoogleEarth = new System.Windows.Forms.CheckBox();
             this.chkEnableCoPilot = new System.Windows.Forms.CheckBox();
             this.btnStartTracker = new System.Windows.Forms.Button();
+            this.webCapture1 = new WebCam.WebCapture();
             this.SimConnect = new Sim.Connect();
+            this.btnTest = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.picGoogleEarthConnect)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -319,26 +320,9 @@
             this.btnCalibrate.UseVisualStyleBackColor = true;
             this.btnCalibrate.Click += new System.EventHandler(this.BtnCalibrate_Click);
             // 
-            // webCapture1
-            // 
-            this.webCapture1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.webCapture1.BackColor = System.Drawing.Color.White;
-            this.webCapture1.CaptureFPS = 30;
-            this.webCapture1.HorizontalResoltion = 1280;
-            this.webCapture1.IsEnabled = false;
-            this.webCapture1.Location = new System.Drawing.Point(3, 2);
-            this.webCapture1.MarkerMinMatch = 0.3F;
-            this.webCapture1.MarkerSize = 32;
-            this.webCapture1.Name = "webCapture1";
-            this.webCapture1.ShowDebug = false;
-            this.webCapture1.Size = new System.Drawing.Size(304, 201);
-            this.webCapture1.TabIndex = 0;
-            this.webCapture1.VerticalResoltion = 720;
-            // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.btnTest);
             this.tabPage2.Controls.Add(this.btnManifoldPressureSet);
             this.tabPage2.Controls.Add(this.txtAirSpeed);
             this.tabPage2.Controls.Add(this.label2);
@@ -402,6 +386,24 @@
             this.btnStartTracker.UseVisualStyleBackColor = true;
             this.btnStartTracker.Click += new System.EventHandler(this.btnStartTracker_Click);
             // 
+            // webCapture1
+            // 
+            this.webCapture1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.webCapture1.BackColor = System.Drawing.Color.White;
+            this.webCapture1.CaptureFPS = 30;
+            this.webCapture1.HorizontalResoltion = 1280;
+            this.webCapture1.IsEnabled = false;
+            this.webCapture1.Location = new System.Drawing.Point(3, 2);
+            this.webCapture1.MarkerMinMatch = 0.3F;
+            this.webCapture1.MarkerSize = 32;
+            this.webCapture1.Name = "webCapture1";
+            this.webCapture1.ShowDebug = false;
+            this.webCapture1.Size = new System.Drawing.Size(304, 201);
+            this.webCapture1.TabIndex = 0;
+            this.webCapture1.VerticalResoltion = 720;
+            // 
             // SimConnect
             // 
             this.SimConnect.bRunning = global::FSX_EMPIRE.Properties.Resources.Green_Light;
@@ -410,6 +412,16 @@
             this.SimConnect.Name = "SimConnect";
             this.SimConnect.Size = new System.Drawing.Size(76, 17);
             this.SimConnect.TabIndex = 8;
+            // 
+            // btnTest
+            // 
+            this.btnTest.Location = new System.Drawing.Point(266, 3);
+            this.btnTest.Name = "btnTest";
+            this.btnTest.Size = new System.Drawing.Size(37, 23);
+            this.btnTest.TabIndex = 27;
+            this.btnTest.Text = "Test";
+            this.btnTest.UseVisualStyleBackColor = true;
+            this.btnTest.Click += new System.EventHandler(this.btnTest_Click);
             // 
             // FrmMain
             // 
@@ -475,6 +487,7 @@
         private System.Windows.Forms.CheckBox chkEnableGoogleEarth;
         private System.Windows.Forms.CheckBox chkEnableCoPilot;
         private System.Windows.Forms.Button btnStartTracker;
+        private System.Windows.Forms.Button btnTest;
     }
 }
 

@@ -71,6 +71,10 @@ namespace WebCam
         [Browsable(false)]
         public Point BottomMarker
         { get { return procesor.tracker.MarkerLocations[1]; } }
+
+        [Browsable(false)]
+        public float TrackerScale
+        { get { return procesor.tracker.Scale; } }
         #endregion
 
         #region Head Tracking Calibration (Todo: find way to make this more seperate from usercontrol)
@@ -99,7 +103,7 @@ namespace WebCam
         {
             procesor.tracker.boundingBox.left = calibration.boundingBox.left + calibration.boundingBoxPadding;
             procesor.tracker.boundingBox.right = calibration.boundingBox.right - calibration.boundingBoxPadding;
-            procesor.tracker.boundingBox.top = calibration.boundingBox.top + calibration.boundingBoxPadding;
+            procesor.tracker.boundingBox.top = calibration.boundingBox.top + calibration.boundingBoxPadding*3;
             procesor.tracker.boundingBox.bottom = calibration.boundingBox.bottom - calibration.boundingBoxPadding;
 
             #region Fix off screen bounding box

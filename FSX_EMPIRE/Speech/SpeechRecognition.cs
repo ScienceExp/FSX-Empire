@@ -143,21 +143,5 @@ namespace FSX_EMPIRE
             if (recognizer != null)
                 recognizer.Dispose();
         }
-
-        void InstalledRecognizers2Console()
-        {
-            RecognizerInfo info = null;
-            foreach (RecognizerInfo ri in SpeechRecognitionEngine.InstalledRecognizers())
-            {
-                if (ri.Culture.TwoLetterISOLanguageName.Equals("en"))
-                {
-                    info = ri;
-                    Console.WriteLine(info.Name);
-                    //break;
-                }
-                ri.Dispose();
-            }
-            info.Dispose();
-        }
     }
 }

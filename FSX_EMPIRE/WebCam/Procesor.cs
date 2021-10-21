@@ -89,15 +89,16 @@ namespace WebCam
             #endregion
 
             #region Draw markers on screen 
-            if (tracker.MarkerLocations[0].X > 0 && tracker.MarkerLocations[0].Y > 0)
+            Point[] m = tracker.MarkerLocations;
+            if (tracker.MarkerLocations[0].X > 0 && m[0].Y > 0)
             {
-                buffer[current].DrawCircle(tracker.MarkerLocations[0], half, Color.Red);
-                buffer[current].SetPixel(tracker.MarkerLocations[0].X, tracker.MarkerLocations[0].Y, Color.Red);
+                buffer[current].DrawCircle(m[0], half, Color.Red);
+                buffer[current].SetPixel(m[0].X, m[0].Y, Color.Red);
             }
-            if (tracker.MarkerLocations[1].X > 0 && tracker.MarkerLocations[1].Y > 0)
+            if (m[1].X > 0 && m[1].Y > 0)
             {
-                buffer[current].DrawCircle(tracker.MarkerLocations[1], half, Color.Aqua);
-                buffer[current].SetPixel(tracker.MarkerLocations[1].X, tracker.MarkerLocations[1].Y, Color.Aqua);
+                buffer[current].DrawCircle(m[1], half, Color.Aqua);
+                buffer[current].SetPixel(m[1].X, m[1].Y, Color.Aqua);
             }
             if (tracker.boundingBox != null)
             {
@@ -106,6 +107,14 @@ namespace WebCam
                     buffer[current].DrawRect(new Point(tracker.boundingBox.left, tracker.boundingBox.top),
                         new Point(tracker.boundingBox.right,
                         tracker.boundingBox.bottom), Color.Red);
+
+                    //draw scale rect
+                    if (m[0].X - tracker.Scale > 0 && m[0].Y - tracker.Scale > 0)
+                    {
+                        buffer[current].DrawRect(new Point(m[0].X + tracker.Scale, m[0].Y + tracker.Scale),
+                            new Point(m[0].X - tracker.Scale, m[0].Y - tracker.Scale), Color.White);
+                        //Console.WriteLine("Scale: " + tracker.Scale);
+                    }
                 }
             }
 

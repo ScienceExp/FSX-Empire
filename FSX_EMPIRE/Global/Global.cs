@@ -23,7 +23,11 @@ class G
     /// <summary>Path to Aircraft.cfg</summary>
     public static string FSXAircraftPath { get { return FSXPath + @"\SimObjects\Airplanes\"; } }
     /// <summary>Path to Settings.INI</summary>
-    public static string settingsPath = AppDomain.CurrentDomain.BaseDirectory + "settings.ini";
+    public static string settingsPath = AppDomain.CurrentDomain.BaseDirectory + "Settings.ini";
+
+    /// <summary>Path to CoPilotCommands</summary>
+    public static string CoPilotCommandsPath = AppDomain.CurrentDomain.BaseDirectory + "CoPilotCommands.ini";
+
     #endregion
 
     #region aircrft.cfg

@@ -281,6 +281,7 @@ namespace WebCam
                     //Keep track of all the places that are possible tracker locations
                     if (sumTotal > minimumPositive)
                     {
+                        //Console.WriteLine(sumTotal);
                         PossibleMarkers.Add(new Match(x, y, sumTotal));
                     }
                 }
@@ -289,7 +290,11 @@ namespace WebCam
         }
 
         /// <summary>Gets the sum of all the pixels in the bounding box</summary>
-        /// <returns>Sum</returns>
+        /// <param name="x">Right most coordinate of box</param>
+        /// <param name="y">Top most coordinate of box</param>
+        /// <param name="width">Full width of box</param>
+        /// <param name="height">Full height of box</param>
+        /// <returns>Sum</returns>    
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         float GetSum(int x, int y, int width, int height)
         {
@@ -394,10 +399,53 @@ namespace WebCam
                         }
                     }
                 }
+          
+                GetScale();
             }
         }
         #endregion
 
+        public int Scale = 0;
+        /// <summary>Returns value of pixels matching marker</summary>
+        /// <param name="x">Center X</param>
+        /// <param name="y">Center Y</param>
+        /// <param name="hX">Half Width</param>
+        /// <param name="hY">Half Height</param>
+        /// <returns>Sum of match to tracker</returns>
+        float GetFullSum(int x, int y, int hX, int hY)
+        {
+            float div = hX * hY * 2;
+
+            float sumW = GetSum(x, y, hX, hY);      //top right
+            sumW += GetSum(x - hX, y - hY, hX, hY); //left bottom
+            sumW /= div;
+
+            float sumB = GetSum(x - hX, y, hX, hY); //top left
+            sumB += GetSum(x, y - hY, hX, hY);      //right bottom
+            sumB /= div;
+
+            return sumW - sumB;
+        }
+       
+        public void GetScale()
+        {
+            Point[] p = MarkerLocations;
+            int half = markerSize / 2;
+            //int offset = half;
+            float min = minimumPositive;
+            if (p[0].X > half && p[0].Y > half)
+            {
+
+                //Console.WriteLine("Score: " + GetFullSum(p[0].X + offset, p[0].Y + offset, half, half) + " " + min);
+
+                while (GetFullSum(p[0].X + half, p[0].Y + half, half, half) >= min)
+                {
+                    //Console.WriteLine("Score: " + GetFullSum(p[0].X + half, p[0].Y + half, half, half));
+                    half++;
+                }
+            }
+            Scale = half;
+        }
         #region Draw the marker being searched for (for debug)
         /// <summary>Draws the Marker being looked for in the bottom left corner. For debug purposes</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
